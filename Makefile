@@ -2,7 +2,8 @@ NAME    = ircserv
 CXX     = c++
 FLAGS   = -Wall -Wextra -Werror -std=c++98
 
-SRCSF   = main.cpp
+SRCSF   = main.cpp \
+					server.cpp
 SRCDIR  = srcs/
 OBJDIR  = objs/
 
