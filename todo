@@ -1,0 +1,33 @@
+
+Un projet IRC (Internet Relay Chat) a une structure assez classique côté logiciel. Voilà le schéma général :
+
+**1. Le serveur IRC**
+
+* Gère les connexions des clients.
+* Maintient une liste d’utilisateurs et de salons (channels).
+* Transmet les messages entre clients.
+* Implémente le protocole IRC (RFC 1459 et extensions).
+
+**2. Les clients IRC**
+
+* Sont des programmes (GUI ou console) qui se connectent au serveur.
+* Permettent à l’utilisateur d’envoyer/recevoir des messages, rejoindre/quitter des salons, gérer des pseudos.
+
+**3. Les salons (channels)**
+
+* Espaces de discussion (#general, #random…).
+* Chaque salon a une liste d’utilisateurs et des règles (opérateurs, permissions).
+
+**4. Les messages et commandes**
+
+* Utilisent un protocole texte (ex: `JOIN #channel`, `PRIVMSG #channel :Hello`).
+* Messages privés ou publics.
+* Commandes de gestion (NICK, QUIT, PART, TOPIC…).
+
+**5. Architecture logicielle typique**
+
+* **Socket réseau** (TCP) pour la communication.
+* **Parser** pour analyser les commandes IRC.
+* **Gestion des états** : utilisateurs, salons, permissions.
+* **Boucle d’événements** : écoute des messages, traitement, envoi aux bons destinataires.
+
