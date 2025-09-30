@@ -1,24 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   struct_class.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 18:33:31 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/09/30 19:09:36 by yle-jaou         ###   ########.fr       */
+/*   Created: 2025/09/30 18:33:24 by yle-jaou          #+#    #+#             */
+/*   Updated: 2025/09/30 19:07:53 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../incl/struct_class.hpp"
+#include "struct_class.hpp"
 
-int main(int ac, char **av)
+//Client Class Definition
+
+
+Client::Client(std::string password, std::string nickname, std::string username): _password(password), _nickname(nickname), _username(username)
 {
-  (void) av;
-  if (ac != 3)
-  {
-    std::cerr << "you need to input 2 arguments (Port, Password)" << std::endl; //utilser std::cerr pour ecrire dans stderr en cas d'erreur ou de warning
-    return 1;
-  }
-  return 0;
+    
 }
+
+Client::~Client()
+{
+    
+}
+
