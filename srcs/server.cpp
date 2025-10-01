@@ -6,19 +6,13 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/01 18:02:20 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/01 19:16:13 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/struct_class.hpp"
 #include "../incl/server.hpp"
-#include <iostream>
-#include <string>
-#include <cstring>     // memset
-#include <unistd.h>    // close
-#include <netinet/in.h> // sockaddr_in
-#include <sys/socket.h> // socket, bind, listen, accept
-#include <cstdio>
+
 
 /*
     fonction socket(domain, type, protocol);
@@ -103,4 +97,54 @@ int start_server(int port, std::string pass){
     close(server_fd);
 
     return 0;
+}
+
+int second_start_server(int port, std::string pass)
+{
+    (void)pass;
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in addr;
+    std::memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(port);
+
+    bind(server_fd, (sockaddr *)&addr, sizeof(addr));
+    listen(server_fd, SOMAXCONN);
+
+    int epfd = epoll_create1(0);
+    epoll_event ev, events[MAX_EVENTS];
+    ev.events = EPOLLIN;
+    ev.data.fd = server_fd;
+    epoll_ctl(epfd, EPOLL_CTL_ADD, server_fd, &ev);
+
+    std::cout << "server listening on port " << port << std::endl;
+
+    while(true)
+    {
+        int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
+        for (int i = 0; i < nfds; i++)
+        {
+            if (events[i].data.fd == server_fd)
+            {
+                int client_fd = accept(server_fd, NULL, NULL);
+                ev.events = EPOLLIN;
+                ev.data.fd = client_fd;
+                epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &ev);
+                std::cout << "New client!" << std::endl;
+            }
+            else
+            {
+                char buf[512];
+                int n = recv(events[i].data.fd, buf, sizeof(buf), 0);
+                if (n <= 0) {
+                    close(events[i].data.fd);
+                    epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+                    std::cout << "Client disconnected!" << std::endl;
+                }
+                else
+                    std::cout << "Message: " << std::string(buf, n) << std::endl;
+            }
+        }
+    }
 }
