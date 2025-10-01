@@ -1,43 +1,31 @@
-NAME    = ircserv
-CXX     = c++
-FLAGS   = -Wall -Wextra -Werror -std=c++98
+NAME = ircserv
+CC = c++
+CFLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRCSF   = main.cpp \
-					server.cpp
-SRCDIR  = srcs/
-OBJDIR  = objs/
+SRCS =	srcs/main.cpp \
+		srcs/struct_class.cpp \
+		srcs/server.cpp \
 
-SRCS    = $(addprefix $(SRCDIR), $(SRCSF))
-OBJS    = $(addprefix $(OBJDIR), $(SRCSF:.cpp=.o))
-
-# Couleurs
-GREEN   = \033[1;32m
-RED     = \033[1;31m
-PINK    = \033[1;35m
-RESET   = \033[0m
+OBJDIR = objs
+OBJS = $(SRCS:srcs/%.cpp=$(OBJDIR)/%.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJDIR) $(OBJS)
-	@echo "$(PINK)|$(RESET)"
-	@$(CXX) $(FLAGS) -o $(NAME) $(OBJS)
-	@echo "$(GREEN)✔ irc ready$(RESET)"
+$(NAME): $(OBJS)
+	@echo "Compilation complete ✅"
+	@$(CC) $(CFLAGS) -o $@ $^
 
-$(OBJDIR)%.o: $(SRCDIR)%.cpp
-	@echo "$(PINK)Compiling $< ...$(RESET)"
-	@$(CXX) $(FLAGS) -c $< -o $@
-
-$(OBJDIR):
+$(OBJDIR)/%.o: srcs/%.cpp
 	@mkdir -p $(OBJDIR)
-	@echo "$(PINK)Creating obj directory...$(RESET)"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
+	@echo "Cleaning objects 🧹"
 	@rm -rf $(OBJDIR)
-	@echo "$(RED)✘ objects deleted$(RESET)"
 
 fclean: clean
+	@echo "Removing executable 🧼"
 	@rm -f $(NAME)
-	@echo "$(RED)✘ binary deleted$(RESET)"
 
 re: fclean all
 

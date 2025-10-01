@@ -6,12 +6,12 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:26 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/09/30 19:08:34 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/01 15:51:23 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STRUCT_HPP
-# define STRUCT_HPP
+#ifndef STRUCT_CLASS_HPP
+# define STRUCT_CLASS_HPP
 
 # include <iostream>
 # include <string>
