@@ -16,6 +16,7 @@
 # include <iostream>
 # include <string>
 
+
 typedef struct rules
 {
 	int	port;
@@ -26,17 +27,23 @@ typedef struct server
 {
 }		t_server;
 
-class Client
-{
-  private:
-	std::string _password; // un password est il necessaire ? "Vous devez pouvoir vous authentifier, définir un nickname, un username" que veut dire authentifier ?
-	std::string _nickname;
-	std::string _username;
+class Client {
+public:
+    int fd;
+    std::string ip;
+    int port;
+    std::string _password;
+    std::string _nickname;
+    std::string _username;
 
-  public:
-	Client(std::string password, std::string nickname, std::string username);
-	~Client();
+    Client(int fd, const std::string& ip, int port,
+           const std::string& password = "",
+           const std::string& nickname = "",
+           const std::string& username = "");
 
+    ~Client();
 };
+
+
 
 #endif // !STRUCT_HPP

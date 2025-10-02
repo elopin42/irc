@@ -21,10 +21,14 @@
 #include <sys/socket.h>
 #include <cstdio>
 #include <sys/epoll.h>
+#include <vector>
+#include "struct_class.hpp"
 
 #define MAX_EVENTS 10
 
 int start_server(int port, std::string pass);
 int second_start_server(int port, std::string pass);
+int remove_client(int epfd, int client_fd, std::vector<Client>& clients);
+int add_client(int epfd, int client_fd, std::vector<Client>& clients, epoll_event ev);
 
 #endif
