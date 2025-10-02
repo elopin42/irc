@@ -12,12 +12,11 @@
 
 #include "../incl/server.hpp"
 
-Client::Client(int fd, const std::string& ip, int port,
-               const std::string& password,
-               const std::string& nickname,
-               const std::string& username)
+Client::Client(int fd, const std::string &ip, int port,
+               const std::string &password,
+               const std::string &nickname,
+               const std::string &username)
     : fd(fd), ip(ip), port(port),
       _password(password), _nickname(nickname), _username(username) {}
 
 Client::~Client() {}
-

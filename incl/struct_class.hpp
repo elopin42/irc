@@ -13,19 +13,14 @@
 #ifndef STRUCT_CLASS_HPP
 # define STRUCT_CLASS_HPP
 
-# include <iostream>
-# include <string>
-
+# include "defs.hpp"
+# include "server.hpp"
 
 typedef struct rules
 {
 	int	port;
 	std::string password;
 }		t_rules;
-
-typedef struct server
-{
-}		t_server;
 
 class Client {
 public:
@@ -35,6 +30,7 @@ public:
     std::string _password;
     std::string _nickname;
     std::string _username;
+    std::string _output_buffer;
 
     Client(int fd, const std::string& ip, int port,
            const std::string& password = "",
@@ -42,8 +38,17 @@ public:
            const std::string& username = "");
 
     ~Client();
+    void appendToBuffer(const std::string& message);
 };
 
-
+typedef struct server
+{
+    std::vector<Client> *clients;
+    t_rules *rules;
+    int server_fd;
+    sockaddr_in addr;
+    int ep_fd;
+    epoll_event ev, events[MAX_EVENTS];
+}		t_server;
 
 #endif // !STRUCT_HPP

@@ -13,7 +13,6 @@
 #include "../incl/struct_class.hpp"
 #include "../incl/server.hpp"
 
-
 /*
     fonction socket(domain, type, protocol);
     cree un socket (fd) pour le serveur
@@ -38,125 +37,165 @@
     sockfd = server fd
     * addr = struct decrivant une ip
     addrlen = sizeof(addr)
-
-    Ce bout de code ne gere qu'une connection et se ferme apres
-    (pas l'objectif d'irc de base c un exemple afin de comprendre
-    le fonctionnement de ce 4 fonctions)
 */
 
-int start_server(int port, std::string pass){
-    (void)pass;
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd < 0)
+t_server *server_init(int port, std::string pass)
+{
+    t_server *serv = new t_server;
+    t_rules *rules = new t_rules;
+
+    rules->password = pass;
+    rules->port = port;
+    serv->rules = rules;
+    serv->clients = new std::vector<Client>;
+    serv->server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (serv->server_fd == -1)
+        throw std::runtime_error("socket fail\n");
+    std::memset(&serv->addr, 0, sizeof(serv->addr));
+    serv->addr.sin_family = AF_INET;
+    serv->addr.sin_addr.s_addr = INADDR_ANY;
+    serv->addr.sin_port = htons(port);
+
+    bind(serv->server_fd, (sockaddr *)&serv->addr, sizeof(serv->addr));
+    if (listen(serv->server_fd, SOMAXCONN) == -1)
+        throw std::runtime_error("listen fail\n");
+
+    serv->ep_fd = epoll_create1(0);
+    serv->ev.events = EPOLLIN;
+    serv->ev.data.fd = serv->server_fd;
+    if (epoll_ctl(serv->ep_fd, EPOLL_CTL_ADD, serv->server_fd, &serv->ev) == -1)
+        throw std::runtime_error("listen fail\n");
+    return (serv);
+}
+
+int add_to_buffer(int client_fd, const std::string &message, t_server *server)
+{
+    for (size_t i = 0; i < server->clients->size(); i++)
     {
-        perror("socket");
-        return (1);
+        if ((*server->clients)[i].fd != client_fd)
+        {
+            if ((*server->clients)[i]._output_buffer.empty())
+            {
+                struct epoll_event ev;
+                ev.events = EPOLLIN | EPOLLOUT;
+                ev.data.fd = (*server->clients)[i].fd;
+                if (epoll_ctl(server->ep_fd, EPOLL_CTL_MOD, (*server->clients)[i].fd, &ev) == -1)
+                {
+                    perror("epoll_ctl MOD fail");
+                    return 1;
+                }
+            }
+            std::string normalized = message;
+
+            if (!normalized.empty() && normalized[normalized.size() - 1] == '\n')
+            {
+                normalized.erase(normalized.size() - 1);
+
+                if (normalized.empty() || normalized[normalized.size() - 1] != '\r')
+                    normalized += "\r";
+                normalized += "\n";
+            }
+            else if (normalized.find("\r\n") == std::string::npos)
+                normalized += "\r\n";
+            (*server->clients)[i].appendToBuffer(normalized);
+        }
     }
-
-    int opt = 1;
-    //mettre le socket en reuse pour pouvoir reutiliser directement la
-    //meme adresse car tcp peut parfois la bloquer environ 1 minute sans
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-    sockaddr_in addr;
-    std::memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY; //accepte toute ip locales
-    addr.sin_port = htons(port);
-
-    if (bind(server_fd, (sockaddr*)&addr, sizeof(addr)) < 0)
-        return (perror("bind"), 1);
-    
-    if (listen(server_fd, 1) < 0)
-    {
-        perror("listen");
-        return 1;
-    }
-    
-    std::cout << "Server listening on port "<< port << std::endl;
-
-    sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    int client_fd = accept(server_fd, (sockaddr*)&client_addr, &client_len);
-    if (client_fd < 0) {
-        perror("accept");
-        return 1;
-    }
-
-    std::cout << "a client connected" << std::endl;
-
-    char buffer[1024];
-    int n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-    if (n > 0)
-    {
-        buffer[n] = '\0';
-        std::cout << "Reçu: " << buffer << std::flush;
-    }
-
-    close(client_fd);
-    close(server_fd);
-
     return 0;
 }
 
-//le pass sert a rien et le int renvoi j'amais rien
-
-int second_start_server(int port, std::string pass)
+std::string *get_client_buff(int fd, std::vector<Client> *clients)
 {
-    (void)pass;
-    std::vector<Client> clients;
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in addr;
-    std::memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(port);
+    std::vector<Client>::iterator it;
 
-    bind(server_fd, (sockaddr *)&addr, sizeof(addr));
-    listen(server_fd, SOMAXCONN);
-
-    int epfd = epoll_create1(0);
-    epoll_event ev, events[MAX_EVENTS];
-    ev.events = EPOLLIN;
-    ev.data.fd = server_fd;
-    epoll_ctl(epfd, EPOLL_CTL_ADD, server_fd, &ev);
-
-    std::cout << "server listening on port " << port << std::endl;
-
-    while(true)
+    for (it = clients->begin(); it != clients->end(); it++)
     {
-        int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
+        if ((*it).fd == fd)
+            return (&(*it)._output_buffer);
+    }
+    return NULL;
+}
+
+int start_server(int port, std::string pass)
+{
+    t_server *serv;
+    try
+    {
+        serv = server_init(port, pass);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+    std::cout << "server listening on Port " << serv->rules->port << std::endl;
+
+    while (true)
+    {
+        int nfds = epoll_wait(serv->ep_fd, serv->events, MAX_EVENTS, -1);
+        if (nfds == -1)
+            throw std::runtime_error("epoll_wait fail\n");
         for (int i = 0; i < nfds; i++)
         {
-            if (events[i].data.fd == server_fd)
+            if (serv->events[i].data.fd == serv->server_fd)
             {
-                int client_fd = accept(server_fd, NULL, NULL);
-                if (client_fd == -1) {
-                  perror("accept");
-                  continue;
+                int client_fd = accept(serv->server_fd, NULL, NULL);
+                if (client_fd == -1)
+                {
+                    perror("accept fail");
+                    return 1;
                 }
-                ev.events = EPOLLIN;
-                ev.data.fd = client_fd;
-                if (add_client(epfd, client_fd, clients, ev) == -1) {
-                  close(client_fd);
-                  continue;
+                serv->ev.events = EPOLLIN;
+                serv->ev.data.fd = client_fd;
+                if (add_client(serv->ep_fd, client_fd, serv->clients, serv->ev) == -1)
+                {
+                    close(client_fd);
+                    perror("add_client fail");
+                    return 1;
                 }
-                std::cout << "New client!" << std::endl;
-                char to_send[128] = "Hello!, welcome to the best IRC Server!\n";
-                send(client_fd, to_send, sizeof(to_send), 0);
+                char to_send[128] = "Hello!, welcome to the best IRC Server!\r\n";
+                send(client_fd, to_send, strlen(to_send), 0);
             }
             else
             {
-                char buf[512];
-                int n = recv(events[i].data.fd, buf, sizeof(buf), 0);
-                if (n <= 0) {
-                  remove_client(epfd, events[i].data.fd, clients);
-                    std::cout << "Client disconnected!" << std::endl;
+                if (serv->events[i].events & EPOLLOUT)
+                {
+                    std::string *buf = get_client_buff(serv->events[i].data.fd, serv->clients);
+                    size_t n = (*buf).find("\r\n");
+                    if (n != std::string::npos)
+                    {
+                        int sent = send(serv->events[i].data.fd, (*buf).c_str(), n + 2, 0);
+                        if (sent == -1)
+                        {
+                            perror("send fail");
+                            return 1;
+                        }
+                        else
+                            (*buf).erase(0, sent);
+                        if ((*buf).empty())
+                        {
+                            serv->ev.events = EPOLLIN;
+                            serv->ev.data.fd = serv->events[i].data.fd;
+                            if (epoll_ctl(serv->ep_fd, EPOLL_CTL_MOD, serv->events[i].data.fd, &serv->ev) == -1)
+                            {
+                                perror("epoll_ctl MOD fail");
+                                return 1;
+                            }
+                        }
+                    }
                 }
-                else
-                    std::cout << "Message: " << std::string(buf, n) << std::flush;
+                if (serv->events[i].events & EPOLLIN)
+                {
+                    char buf[512];
+                    int n = recv(serv->events[i].data.fd, buf, sizeof(buf), 0);
+                    if (n <= 0)
+                    {
+                        remove_client(serv->ep_fd, serv->events[i].data.fd, serv->clients);
+                        std::cout << "Client disconnected!" << std::endl;
+                    }
+                    else
+                        add_to_buffer(serv->events[i].data.fd, std::string(buf, n), serv);
+                }
             }
         }
     }
 }
-

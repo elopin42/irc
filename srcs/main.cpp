@@ -22,6 +22,6 @@ int main(int ac, char **av)
     std::cerr << "you need to input 2 arguments (Port, Password)" << std::endl; //utilser std::cerr pour ecrire dans stderr en cas d'erreur ou de warning
     return 1;
   }
-  second_start_server(atoi(av[1]), av[2]);
+  start_server(atoi(av[1]), av[2]);
   return 0;
 }
