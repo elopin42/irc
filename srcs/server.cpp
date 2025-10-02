@@ -132,6 +132,8 @@ int second_start_server(int port, std::string pass)
                 ev.data.fd = client_fd;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &ev);
                 std::cout << "New client!" << std::endl;
+                char to_send[128] = "Hello!, welcome to the best IRC Server!\n";
+                send(client_fd, to_send, sizeof(to_send), 0);
             }
             else
             {
@@ -143,7 +145,7 @@ int second_start_server(int port, std::string pass)
                     std::cout << "Client disconnected!" << std::endl;
                 }
                 else
-                    std::cout << "Message: " << std::string(buf, n) << std::endl;
+                    std::cout << "Message: " << std::string(buf, n) << std::flush;
             }
         }
     }
