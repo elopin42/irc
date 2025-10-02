@@ -99,9 +99,12 @@ int start_server(int port, std::string pass){
     return 0;
 }
 
+//le pass sert a rien et le int renvoi j'amais rien
+
 int second_start_server(int port, std::string pass)
 {
     (void)pass;
+    std::vector<Client> clients;
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     sockaddr_in addr;
     std::memset(&addr, 0, sizeof(addr));
@@ -128,9 +131,16 @@ int second_start_server(int port, std::string pass)
             if (events[i].data.fd == server_fd)
             {
                 int client_fd = accept(server_fd, NULL, NULL);
+                if (client_fd == -1) {
+                  perror("accept");
+                  continue;
+                }
                 ev.events = EPOLLIN;
                 ev.data.fd = client_fd;
-                epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &ev);
+                if (add_client(epfd, client_fd, clients, ev) == -1) {
+                  close(client_fd);
+                  continue;
+                }
                 std::cout << "New client!" << std::endl;
                 char to_send[128] = "Hello!, welcome to the best IRC Server!\n";
                 send(client_fd, to_send, sizeof(to_send), 0);
@@ -140,8 +150,7 @@ int second_start_server(int port, std::string pass)
                 char buf[512];
                 int n = recv(events[i].data.fd, buf, sizeof(buf), 0);
                 if (n <= 0) {
-                    close(events[i].data.fd);
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+                  remove_client(epfd, events[i].data.fd, clients);
                     std::cout << "Client disconnected!" << std::endl;
                 }
                 else
@@ -150,3 +159,4 @@ int second_start_server(int port, std::string pass)
         }
     }
 }
+

@@ -10,18 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../incl/struct_class.hpp"
+#include "../incl/server.hpp"
 
-//Client Class Definition
+Client::Client(int fd, const std::string& ip, int port,
+               const std::string& password,
+               const std::string& nickname,
+               const std::string& username)
+    : fd(fd), ip(ip), port(port),
+      _password(password), _nickname(nickname), _username(username) {}
 
-
-Client::Client(std::string password, std::string nickname, std::string username): _password(password), _nickname(nickname), _username(username)
-{
-    
-}
-
-Client::~Client()
-{
-    
-}
+Client::~Client() {}
 
