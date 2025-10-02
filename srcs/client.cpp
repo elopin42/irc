@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/epoll.h>
-#include "../incl/Server.hpp"
+#include "../incl/server.hpp"
 #include "../incl/struct_class.hpp"
 
 int add_client(int epfd, int client_fd, std::vector<Client>& clients, epoll_event ev)
