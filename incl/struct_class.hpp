@@ -30,6 +30,8 @@ public:
     std::string _password;
     std::string _nickname;
     std::string _username;
+
+    std::string _input_buffer;
     std::string _output_buffer;
 
     Client(int fd, const std::string& ip, int port,

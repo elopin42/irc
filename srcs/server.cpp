@@ -193,7 +193,14 @@ int start_server(int port, std::string pass)
                         std::cout << "Client disconnected!" << std::endl;
                     }
                     else
-                        add_to_buffer(serv->events[i].data.fd, std::string(buf, n), serv);
+                    {
+                      for (size_t j = 0; j < serv->clients->size(); j++) {
+                        if ((*serv->clients)[j].fd == serv->events[i].data.fd) {
+                          handle_client_input((*serv->clients)[j], std::string(buf, n), serv);
+                          break;
+                        }
+                      }
+                    }
                 }
             }
         }

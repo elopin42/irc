@@ -42,3 +42,29 @@ void Client::appendToBuffer(const std::string &message)
 {
     _output_buffer += message;
 }
+ 
+void handle_client_input(Client &client, const std::string &data, t_server *server) {
+    client._input_buffer += data;
+
+    size_t pos;
+    while ((pos = client._input_buffer.find('\n')) != std::string::npos) {
+        std::string line = client._input_buffer.substr(0, pos + 1);
+        client._input_buffer.erase(0, pos + 1);
+
+        if (line.size() >= 2 && line[line.size() - 2] == '\r' && line.back() == '\n') {
+        } else {
+            if (!line.empty() && line.back() == '\n') {
+                line.pop_back();
+                line += "\r\n";
+            }
+        }
+
+        if (line.size() > 512) {
+            line = line.substr(0, 510) + "\r\n";
+        }
+
+        std::cout << "[RECV] from fd=" << client.fd << " -> " << line;
+
+        add_to_buffer(client.fd, line, server);
+    }
+}
