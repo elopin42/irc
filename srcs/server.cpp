@@ -41,6 +41,9 @@
 
 t_server *server_init(int port, std::string pass)
 {
+    if (port < 1024 || port > 65535)
+      throw std::runtime_error("invalid port number, need to be between 1024 and 65535");
+
     t_server *serv = new t_server;
     t_rules *rules = new t_rules;
 
@@ -56,9 +59,20 @@ t_server *server_init(int port, std::string pass)
     serv->addr.sin_addr.s_addr = INADDR_ANY;
     serv->addr.sin_port = htons(port);
 
-    bind(serv->server_fd, (sockaddr *)&serv->addr, sizeof(serv->addr));
+
+    if (bind(serv->server_fd, (sockaddr *)&serv->addr, sizeof(serv->addr)) == -1)
+    {
+      perror("bind fail");
+      close(serv->server_fd);
+      throw std::runtime_error("Bind failed — port probably already in use or requires root privileges");
+    }
     if (listen(serv->server_fd, SOMAXCONN) == -1)
-        throw std::runtime_error("listen fail\n");
+    {
+      perror("listen fail");
+      close(serv->server_fd);
+      throw std::runtime_error("Listen failed");
+    }
+
 
     serv->ep_fd = epoll_create1(0);
     serv->ev.events = EPOLLIN;
@@ -196,7 +210,7 @@ int start_server(int port, std::string pass)
                     {
                       for (size_t j = 0; j < serv->clients->size(); j++) {
                         if ((*serv->clients)[j].fd == serv->events[i].data.fd) {
-                          handle_client_input((*serv->clients)[j], std::string(buf, n), serv);
+                          handle_client_input((*serv->clients)[j], std::string(buf, n));
                           break;
                         }
                       }

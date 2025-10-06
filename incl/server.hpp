@@ -19,9 +19,11 @@
 
 class Client;
 
+typedef struct server t_server;
+
 int start_server(int port, std::string pass);
 int remove_client(int epfd, int client_fd, std::vector<Client> *clients);
 int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev);
-void handle_client_input(Client &client, const std::string &data, t_server *server);
+void handle_client_input(Client &client, const std::string &data);
 
 #endif
