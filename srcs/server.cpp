@@ -43,6 +43,7 @@ t_server *server_init(int port, std::string pass)
 {
     if (port < 1024 || port > 65535)
       throw std::runtime_error("invalid port number, need to be between 1024 and 65535");
+    //em gros avant 1024 il faut etre super user (sudo) donc a voir comment on bypass sa
 
     t_server *serv = new t_server;
     t_rules *rules = new t_rules;
