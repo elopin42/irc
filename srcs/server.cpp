@@ -209,12 +209,15 @@ int start_server(int port, std::string pass)
                     }
                     else
                     {
-                      for (size_t j = 0; j < serv->clients->size(); j++) {
-                        if ((*serv->clients)[j].fd == serv->events[i].data.fd) {
-                          handle_client_input((*serv->clients)[j], std::string(buf, n));
-                          break;
-                        }
-                      }
+                      std::string msg(buf, n);
+                      std::cout << "Received from " << serv->events[i].data.fd << ": " << msg << std::endl;
+                      broadcast_message(serv->clients, serv->events[i].data.fd, msg);
+                      // for (size_t j = 0; j < serv->clients->size(); j++) {
+                      //   if ((*serv->clients)[j].fd == serv->events[i].data.fd) {
+                      //     handle_client_input((*serv->clients)[j], std::string(buf, n));
+                      //     break;
+                      //   }
+                      // }
                     }
                 }
             }

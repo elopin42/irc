@@ -68,3 +68,16 @@ void handle_client_input(Client &client, const std::string &data) {
         client.appendToBuffer(line);
     }
 }
+
+void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg)
+{
+    for (size_t i = 0; i < clients->size(); i++)
+    {
+        int client_fd = (*clients)[i].fd;
+        if (client_fd != sender_fd) // évite de renvoyer au même client si tu veux
+        {
+            send(client_fd, msg.c_str(), msg.size(), 0);
+        }
+    }
+}
+

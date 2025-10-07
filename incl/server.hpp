@@ -25,5 +25,6 @@ int start_server(int port, std::string pass);
 int remove_client(int epfd, int client_fd, std::vector<Client> *clients);
 int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev);
 void handle_client_input(Client &client, const std::string &data);
+void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg);
 
 #endif
