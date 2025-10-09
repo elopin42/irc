@@ -12,11 +12,19 @@
 
 #include "../incl/server.hpp"
 
-Client::Client(int fd, const std::string &ip, int port,
+Client::Client(int fd, const std::string &ip, int port, int channel,
                const std::string &password,
                const std::string &nickname,
                const std::string &username)
-    : fd(fd), ip(ip), port(port),
-      _password(password), _nickname(nickname), _username(username) {}
+    : channel(channel),
+      fd(fd),
+      ip(ip),
+      port(port),
+      _password(password),
+      _nickname(nickname),
+      _username(username),
+      _input_buffer(""),
+      _output_buffer("") {}
+
 
 Client::~Client() {}

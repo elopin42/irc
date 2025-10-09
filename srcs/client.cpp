@@ -9,7 +9,7 @@ int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_even
         return -1;
     }
 
-    clients->push_back(Client(client_fd, "unknown", 0));
+    clients->push_back(Client(client_fd, "unknown", 0, 1));
 
     std::cout << "[INFO] New client added (fd=" << client_fd << ")" << std::endl;
     return 0;

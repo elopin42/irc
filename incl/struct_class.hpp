@@ -24,6 +24,7 @@ typedef struct rules
 
 class Client {
 public:
+    int channel;
     int fd;
     std::string ip;
     int port;
@@ -34,7 +35,7 @@ public:
     std::string _input_buffer;
     std::string _output_buffer;
 
-    Client(int fd, const std::string& ip, int port,
+    Client(int fd, const std::string& ip, int port, int channel,
            const std::string& password = "",
            const std::string& nickname = "",
            const std::string& username = "");
