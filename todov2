@@ -1,5 +1,24 @@
-yann --> gere les handhakes via nc ou rssi
+yann --> gere les handhakes via nc ou irssi
 callista --> gere le parsing pour cree des token et accepter les commandes envoyer par les user
 ethan --> cree le system de chanel
 
 quand une personne complete la tache on vois et on en donne une nouvell
+
+
+Objectif de la gestion des commandes et tout ce qui est epoll
+1. Lorsqu'un client se connecte via nc, on ne recoit rien si ce n'est l'info de sa presence, il faut qu'il set son nick ET son user, tant que cela n'est pas fait
+il ne peut rien faire d'autre, pour irssi c different, il envoie CAP LS, une commande qui nous demande de quoi est capable le serv on doit ensuite repondre, juste apres il envoie
+egalement le nick et le user automatiquement puis il envoie CAP END pour dire qu'il est la et pret a envoyer des commandes, il faut egalement gerer les nick/user doublons en envoyant
+un message d'erreur, et meme histoire qu'avec nc on le force a set un truc valide et il peut rien faire tant que ca c pas bon
+
+2.les commandes sur irssi marchent comme ca,   cote user : /join #channel    cote serv on recoit en realite : JOIN #channel
+cote nc du coup ils doivent faire directement JOIN #channel pas / car on recevrait "/join #channel"
+il ne peut y avoir qu'une seule commande par ligne donc toujours : COMMAND params :trailing
+lors du parsing on doit reconnaitre la commande ex: PRIVMSG 
+le ou les params ex: #general ou un nick
+et tout ce qui vient apres le : veux dire "c'est une string complete, meme les espaces jusqu'au CRLF (\n / \r\n)"
+
+donc il faut traiter la commande puis ses parametre et son "trailing"/son argument quoi
+
+voir toutes les commandes differentes a implementer et leurs descriptions dans commands_to_implement (oui c chatgpt je peux pas le deviner ptdr)
+

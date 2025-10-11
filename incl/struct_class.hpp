@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:26 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/01 15:51:23 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/11 15:28:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,23 @@ typedef struct rules
 
 class Client {
 public:
-    int channel;
-    int fd;
     std::string ip;
     int port;
-    std::string _password;
+    int fd;
+    std::string channel;
     std::string _nickname;
     std::string _username;
+
+    std::string _nickname;
+    std::string _username;
+
+    bool    nick_set;
+    bool    user_set;
 
     std::string _input_buffer;
     std::string _output_buffer;
 
     Client(int fd, const std::string& ip, int port, int channel,
-           const std::string& password = "",
            const std::string& nickname = "",
            const std::string& username = "");
 

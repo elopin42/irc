@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/01 19:16:13 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/11 16:17:10 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,8 +167,6 @@ int start_server(int port, std::string pass)
                     perror("add_client fail");
                     return 1;
                 }
-                char to_send[128] = "Hello!, welcome to the best IRC Server!\r\n";
-                send(client_fd, to_send, strlen(to_send), 0);
             }
             else
             {

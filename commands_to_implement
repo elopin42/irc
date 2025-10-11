@@ -1,0 +1,105 @@
+// ==========================================
+// MANDATORY IRC COMMANDS (ft_irc project)
+// ==========================================
+
+// ---------- CONNECTION / REGISTRATION ----------
+
+// PASS <password>
+// Sent before registration. Must match the password passed to ./ircserv
+// Example:  PASS mySecret
+// Error if sent after registration (ERR_ALREADYREGISTRED 462)
+
+// NICK <nickname>
+// Sets or changes the nickname.
+// Example:  NICK yle-jaou
+// You must check duplicates and reply with 433 if nick already in use.
+
+// USER <username> <mode> <unused> :<realname>
+// Second part of registration after NICK.
+// Example:  USER mariam 0 * :Mariam Lby
+// When both NICK + USER + PASS are received => send 001 welcome.
+
+// QUIT [:message]
+// Disconnects the user gracefully. Broadcast quit message to shared channels.
+// Example:  QUIT :Leaving
+
+// PING <token>
+// Server should reply with PONG <token>.
+// Example:  PING 12345
+// Reply:    PONG 12345
+
+// PONG <token>
+// Client’s reply to your server’s PING. Optional to handle but should be accepted.
+
+
+// ---------- CHANNEL & MESSAGING COMMANDS ----------
+
+// JOIN <channel>{,<channel>} [<key>{,<key>}]
+// Join or create a channel. Create it if it doesn’t exist.
+// Example:  JOIN #general
+//           JOIN #locked password123
+// On success, send JOIN, NAMES, and TOPIC replies.
+
+// PART <channel>{,<channel>} [<message>]
+// Leave one or more channels.
+// Example:  PART #general :goodbye everyone
+
+// PRIVMSG <target> :<message>
+// Send a private message to a channel or user.
+// Example:  PRIVMSG #general :Hello world
+//           PRIVMSG Mariam :hey, you there?
+
+// NOTICE <target> :<message>
+// Same as PRIVMSG but must not generate auto-replies.
+// Example:  NOTICE #staff :Maintenance soon.
+
+
+// ---------- CHANNEL MANAGEMENT (OPER COMMANDS) ----------
+
+// MODE <channel> [<modestring> [<mode params>]]
+// Change or view modes for a channel.
+// Example:  MODE #general +i        // set invite-only
+//           MODE #general -i        // remove invite-only
+//           MODE #general +k key123 // set password
+// Required modes (from subject):
+//   i — invite-only
+//   t — topic restricted to operators
+//   k — set/remove channel key (password)
+//   o — give/remove operator privilege
+//   l — set/remove user limit
+
+// TOPIC <channel> [:<topic>]
+// View or set a channel topic.
+// Example:  TOPIC #general
+//           TOPIC #general :Welcome to the general chat!
+// Respect +t mode (only ops can change when set).
+
+// INVITE <nick> <channel>
+// Invite a user to a channel (required for +i channels).
+// Example:  INVITE mariam #private
+
+// KICK <channel> <user> [<comment>]
+// Eject a user from a channel (must be channel operator).
+// Example:  KICK #general mariam :spamming
+
+
+// ---------- OPTIONAL BUT RECOMMENDED ----------
+
+// CAP LS / CAP END
+// Capability negotiation. irssi sends CAP LS at connect.
+// Reply: :<server> CAP * LS :
+// Ignore CAP REQ and CAP END safely.
+
+// ERROR :<message>
+// Sent by server before closing a connection with an error message.
+
+
+// ---------- NUMERIC REPLIES (examples you should send) ----------
+// 001 <nick> :Welcome to the IRC network
+// 433 * <nick> :Nickname is already in use
+// 461 <nick> <cmd> :Not enough parameters
+// 462 <nick> :You may not reregister
+// 401 <nick> <target> :No such nick/channel
+// 403 <nick> <channel> :No such channel
+// 442 <nick> <channel> :You're not on that channel
+// 482 <nick> <channel> :You're not channel operator
