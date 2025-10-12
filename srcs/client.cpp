@@ -70,13 +70,17 @@ void handle_client_input(Client &client, const std::string &data) {
 }
 
 void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg)
-{
+{    
+    std::stringstream ss;
+    ss << "[Client " << sender_fd << "] " << msg;
+    std::string final_msg = ss.str();
+
     for (size_t i = 0; i < clients->size(); i++)
     {
         int client_fd = (*clients)[i].fd;
         if (client_fd != sender_fd) // évite de renvoyer au même client si tu veux
         {
-            send(client_fd, msg.c_str(), msg.size(), 0);
+            send(client_fd, final_msg.c_str(), final_msg.size(), 0);
         }
     }
 }

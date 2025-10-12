@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <sys/epoll.h>
 #include <vector>
+#include <sstream>
 
 #define MAX_EVENTS 10
 
