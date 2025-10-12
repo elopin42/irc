@@ -27,10 +27,8 @@ public:
     std::string ip;
     int port;
     int fd;
-    std::string channel;
-    std::string _nickname;
-    std::string _username;
-
+    int channel;
+    std::string _password;
     std::string _nickname;
     std::string _username;
 
@@ -41,6 +39,7 @@ public:
     std::string _output_buffer;
 
     Client(int fd, const std::string& ip, int port, int channel,
+           const std::string& password = "",
            const std::string& nickname = "",
            const std::string& username = "");
 

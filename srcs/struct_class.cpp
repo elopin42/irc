@@ -16,15 +16,16 @@ Client::Client(int fd, const std::string &ip, int port, int channel,
                const std::string &password,
                const std::string &nickname,
                const std::string &username)
-    : channel(channel),
-      fd(fd),
-      ip(ip),
+    : ip(ip),
       port(port),
+      fd(fd),
+      channel(channel),
       _password(password),
       _nickname(nickname),
       _username(username),
+      nick_set(false),
+      user_set(false),
       _input_buffer(""),
       _output_buffer("") {}
-
 
 Client::~Client() {}
