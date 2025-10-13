@@ -11,6 +11,9 @@
 #include <sys/epoll.h>
 #include <vector>
 #include <sstream>
+#include <map>
+#include <vector>
+#include <algorithm> 
 
 #define MAX_EVENTS 10
 

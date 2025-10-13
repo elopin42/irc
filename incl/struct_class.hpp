@@ -38,6 +38,8 @@ public:
     std::string _input_buffer;
     std::string _output_buffer;
 
+    Client() : port(0), fd(-1),  channel(-1) {}
+
     Client(int fd, const std::string& ip, int port, int channel,
            const std::string& password = "",
            const std::string& nickname = "",
@@ -49,6 +51,7 @@ public:
 
 typedef struct server
 {
+    std::map<int, std::vector<Client> > channels;
     std::vector<Client> *clients;
     t_rules *rules;
     int server_fd;

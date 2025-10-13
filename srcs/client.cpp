@@ -1,7 +1,7 @@
 #include "../incl/server.hpp"
 #include "../incl/struct_class.hpp"
 
-int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev)
+int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev, server *serv)
 {
     if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &ev) == -1)
     {
@@ -9,10 +9,15 @@ int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_even
         return -1;
     }
 
-    clients->push_back(Client(client_fd, "unknown", 0, 1));
+    Client new_client(client_fd, "unknown", 0, 1, "guest"); // 1 = channel_id de base
+    clients->push_back(new_client);
+    int channel_number = 1;
+    serv->channels[channel_number].push_back(new_client);
 
-    std::cout << "[INFO] New client added (fd=" << client_fd << ")" << std::endl;
-    return 0;
+    std::cout << "[INFO] New client added (fd=" << client_fd
+              << ", channel=" << channel_number << ")" << std::endl;
+
+    return client_fd;
 }
 
 int remove_client(int epfd, int client_fd, std::vector<Client> *clients)
@@ -66,22 +71,6 @@ void handle_client_input(Client &client, const std::string &data) {
         std::cout << "[RECV] from fd=" << client.fd << " -> " << line;
 
         client.appendToBuffer(line);
-    }
-}
-
-void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg)
-{    
-    std::stringstream ss;
-    ss << "[Client " << sender_fd << "] " << msg;
-    std::string final_msg = ss.str();
-
-    for (size_t i = 0; i < clients->size(); i++)
-    {
-        int client_fd = (*clients)[i].fd;
-        if (client_fd != sender_fd) // évite de renvoyer au même client si tu veux
-        {
-            send(client_fd, final_msg.c_str(), final_msg.size(), 0);
-        }
     }
 }
 
