@@ -1,3 +1,4 @@
+
 #ifndef DEFS_HPP
 #define DEFS_HPP
 
@@ -9,8 +10,11 @@
 #include <sys/socket.h>
 #include <cstdio>
 #include <sys/epoll.h>
-#include <vector>
 #include <sstream>
+
+#include <vector>
+#include <set>
+#include <unordered_map>
 
 #define MAX_EVENTS 10
 

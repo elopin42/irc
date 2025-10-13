@@ -1,30 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   struct_class.cpp                                   :+:      :+:    :+:   */
+/*   channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 18:33:24 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/13 15:56:19 by yle-jaou         ###   ########.fr       */
+/*   Created: 2025/10/13 18:00:46 by yle-jaou          #+#    #+#             */
+/*   Updated: 2025/10/13 18:01:02 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../incl/server.hpp"
+#include "defs.hpp"
 
-Client::Client(int fd)
-    : ip(0),
-      port(0),
-      fd(fd),
-      channel(0),
-      _password(0),
-      _nickname(0),
-      _username(0),
-      nick_set(false),
-      user_set(false),
-      pass_set(false),
-      has_registered(false),
-      _input_buffer(0),
-      _output_buffer(0) {}
+class Client;
 
-Client::~Client() {}
+class Channel {
+public:
+    std::string name;
+    std::string topic;
+    std::set<Client*> members;
+
+    explicit Channel(std::string n);
+    void broadcast(const std::string& msg, Client* except = nullptr);
+    void add_member(Client* c);
+    void remove_member(Client* c);
+};

@@ -6,25 +6,39 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/01 19:16:20 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/13 18:28:47 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 
-#define SERVER_HPP
+# define SERVER_HPP
 
-#include "defs.hpp"
-#include "struct_class.hpp"
+# include "defs.hpp"
 
-class Client;
+class	Client;
 
-typedef struct server t_server;
+class   Channel;
 
-int start_server(int port, std::string pass);
-int remove_client(int epfd, int client_fd, std::vector<Client> *clients);
-int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev);
-void handle_client_input(Client &client, const std::string &data);
-void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg);
+class Server {
+public:
+    int port;
+    std::string password;
+
+    int epfd;
+    int server_fd;
+    sockaddr_in addr;
+    epoll_event ev, events[MAX_EVENTS];
+    
+    std::unordered_map<int, Client*> clients;
+    std::unordered_map<std::string, Channel*> channels;
+
+    void run(char **av);
+    
+    
+    void accept_new_client();
+    void handle_client_input(int fd);
+    void remove_client(int fd);
+};
 
 #endif
