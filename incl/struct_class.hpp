@@ -47,6 +47,9 @@ public:
 
     ~Client();
     void appendToBuffer(const std::string& message);
+    bool operator==(const Client &other) const {
+        return fd == other.fd;
+    }
 };
 
 typedef struct server

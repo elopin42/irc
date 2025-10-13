@@ -214,7 +214,15 @@ int start_server(int port, std::string pass)
                       std::cout << "Received from " << serv->events[i].data.fd << ": " << msg << std::endl;
                       int channel_id = find_channel_by_fd(serv->channels, serv->events[i].data.fd);
                       std::cout << " " << channel_id << " " << std::endl;
-                      broadcast_message(&serv->channels[channel_id], serv->events[i].data.fd, msg);
+                      int new_channel = check_join_command(msg);
+                      if (new_channel != -1)
+                      {
+                        std::cout << "[INFO] Client " << serv->events[i].data.fd
+                            << " wants to join channel " << new_channel << std::endl;
+                        change_channel(serv->channels, serv->events[i].data.fd, new_channel);
+                      }
+                      else
+                        broadcast_message(&serv->channels[channel_id], serv->events[i].data.fd, msg);
                       // for (size_t j = 0; j < serv->clients->size(); j++) {
                       //   if ((*serv->clients)[j].fd == serv->events[i].data.fd) {
                       //     handle_client_input((*serv->clients)[j], std::string(buf, n));

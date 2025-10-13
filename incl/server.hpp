@@ -29,5 +29,7 @@ Client find_client_by_fd(const std::map<int, std::vector<Client> > &channels, in
 int find_channel_by_fd(const std::map<int, std::vector<Client> > &channels, int fd_to_find);
 void broadcast_message(std::vector<Client> *clients, int sender_fd, const std::string &msg);
 int add_client(int epfd, int client_fd, std::vector<Client> *clients, epoll_event ev, server *serv);
+void change_channel(std::map<int, std::vector<Client> > &channels, int fd_client, int new_channel);
+int check_join_command(const std::string &msg);
 
 #endif
