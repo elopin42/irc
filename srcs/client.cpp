@@ -37,7 +37,7 @@ void Client::process_data()
 
 void Client::parse_lines()
 {
-	//Travail de callista (parser les lines detecter les commandes et mettre dans un autre vector de commande a executer faire en sorte que les strings de ce vector soit simple a executer et claire, une structure serait meilleure)
+	//Travail de callista (parser les lines detecter les commandes et mettre dans un autre vector de commande a executer faire en sorte que les strings de ce vector soit simple a executer et claire, une structure serait meilleure) struct : le fd du sender, le mot de la cmd, ses args, et pour l'istat le "goat" ne sait pas car nul
 	std::vector<std::string>::iterator it = this->lines_to_parse.begin();
 	while (it != this->lines_to_parse.end())
 	{

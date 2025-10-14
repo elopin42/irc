@@ -37,10 +37,9 @@ bool check_args(char **av)
 
 int main(int ac, char **av)
 {
-  (void) av;
   if (ac != 3)
   {
-    std::cerr << "you need to input 2 arguments (Port, Password)" << std::endl; //utilser std::cerr pour ecrire dans stderr en cas d'erreur ou de warning
+    std::cerr << "you need to input 2 arguments (Port, Password)" << std::endl;
     return 1;
   }
   if (!check_args(av))

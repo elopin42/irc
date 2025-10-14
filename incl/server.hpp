@@ -36,7 +36,6 @@ public:
     void run(char **av);
     void epoll_loop();
     
-    
     void accept_new_client();
     void handle_client_input(int fd);
     void remove_client(int fd);
