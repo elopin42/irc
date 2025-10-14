@@ -3,7 +3,6 @@ CC = c++
 CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98
 
 SRCS =	srcs/main.cpp \
-		srcs/struct_class.cpp \
 		srcs/server.cpp \
 		srcs/client.cpp
 

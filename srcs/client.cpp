@@ -1,64 +1,79 @@
-#include "../incl/server.hpp"
+#include "../incl/client.hpp"
 
-int	add_client(t_server *serv, int client_fd)
+Client::Client(int fd, Server* serv)
+	: server(serv),
+	  fd(fd),
+	  nickname(),
+	  username(),
+	  realname(),
+	  pass_ok(0),
+	  nick_ok(0),
+	  user_ok(0),
+	  registered(0),
+	  lines_to_parse(),
+	  recv_buf(),
+	  send_buf(),
+	  joined_channels() {}
+
+Client::~Client() {}
+
+void Client::process_data()
 {
-	if (epoll_ctl(serv->ep_fd, EPOLL_CTL_ADD, client_fd, &serv->ev) == -1)
+	size_t pos = 0;
+	while ((pos = this->recv_buf.find('\n', pos)) != std::string::npos)
 	{
-		perror("epoll_ctl ADD client");
-		return (-1);
-	}
-	serv->clients[client_fd] = new Client(client_fd);
-	std::cout << "[INFO] New client added (fd=" << client_fd << ")" << std::endl;
-	return (0);
-}
-
-int	remove_client(t_server *serv, int client_fd)
-{
-	if (epoll_ctl(serv->ep_fd, EPOLL_CTL_DEL, client_fd, NULL) == -1)
-	{
-		perror("epoll_ctl DEL client");
-		return (-1);
-	}
-
-	close(client_fd);
-
-	std::unordered_map<int, Client *>::iterator it = serv->clients.find(client_fd);
-	if (it != serv->clients.end())
-    {
-		delete it->second;
-        serv->clients.erase(it);
-    }
-
-	std::cout << "[INFO] Client removed (fd=" << client_fd << ")" << std::endl;
-	return (0);
-}
-
-void Client::appendToBuffer(const std::string &message)
-{
-	_input_buffer += message;
-}
-
-int	handle_client_input(Client &client, const std::string &data)
-{
-    client.appendToBuffer(data);
-	
-}
-
-void	broadcast_message(std::vector<Client> *clients, int sender_fd,
-		const std::string &msg)
-{
-	int	client_fd;
-
-	std::stringstream ss;
-	ss << "[Client " << sender_fd << "] " << msg;
-	std::string final_msg = ss.str();
-	for (size_t i = 0; i < clients->size(); i++)
-	{
-		client_fd = (*clients)[i].fd;
-		if (client_fd != sender_fd)
-		// évite de renvoyer au même client si tu veux
+		if (pos > 0 && this->recv_buf[pos - 1] != '\r')
 		{
-			send(client_fd, final_msg.c_str(), final_msg.size(), 0);
+			this->recv_buf.insert(pos, 1, '\r');
+			pos++; // adjust pos since we inserted
+		}
+		std::string line = this->recv_buf.substr(0, pos + 1);
+		lines_to_parse.push_back(line);
+		this->recv_buf = this->recv_buf.substr(pos + 1);
+		pos = 0;
+	}
+	this->parse_lines();
+}
+
+void Client::parse_lines()
+{
+	//Travail de callista (parser les lines detecter les commandes et mettre dans un autre vector de commande a executer faire en sorte que les strings de ce vector soit simple a executer et claire, une structure serait meilleure)
+	std::vector<std::string>::iterator it = this->lines_to_parse.begin();
+	while (it != this->lines_to_parse.end())
+	{
+		// Broadcast temporaire
+		for (std::map<int, Client*>::iterator client_it = this->server->clients.begin(); client_it != this->server->clients.end(); ++client_it)
+		{
+			if (client_it->second != this)
+			{
+				bool was_empty = client_it->second->send_buf.empty();
+				client_it->second->send_buf.push_back(*it);
+				if (was_empty)
+				{
+					this->server->ev.events = EPOLLIN | EPOLLOUT;
+					this->server->ev.data.fd = client_it->first;
+					if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, client_it->first, &this->server->ev) == -1)
+						throw std::runtime_error("epoll_ctl fail");
+				}
+			}
+		}
+		it = this->lines_to_parse.erase(it);
+	}
+}
+
+void Client::send_pending()
+{
+	std::vector<std::string>::iterator it = this->send_buf.begin();
+	if (it != this->send_buf.end())
+	{
+		send(this->fd, (*it).c_str(), (*it).size(), 0);
+		it = this->send_buf.erase(it);
+		if (this->send_buf.empty())
+		{
+			this->server->ev.events = EPOLLIN;
+			this->server->ev.data.fd = this->fd;
+			if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
+				throw std::runtime_error("epoll_ctl fail");
 		}
 	}
 }

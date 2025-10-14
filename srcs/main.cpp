@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:31 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/13 18:16:29 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/14 13:46:52 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ bool check_args(char **av)
       std::cerr << "invalid password characters, valid ones are from ascii 32 to ascii 126" << std::endl;
       return false;
     }
+  return true;
 }
 
 int main(int ac, char **av)
@@ -52,6 +53,6 @@ int main(int ac, char **av)
   catch(const std::exception& e)
   {
     std::cerr << e.what() << '\n';
+    return 1;
   }
-  return 0;
 }

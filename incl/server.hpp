@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/13 18:28:47 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/14 12:46:48 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,11 @@ public:
     sockaddr_in addr;
     epoll_event ev, events[MAX_EVENTS];
     
-    std::unordered_map<int, Client*> clients;
-    std::unordered_map<std::string, Channel*> channels;
+    std::map<int, Client*> clients;
+    std::map<std::string, Channel*> channels;
 
     void run(char **av);
+    void epoll_loop();
     
     
     void accept_new_client();
