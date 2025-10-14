@@ -18,8 +18,6 @@
 
 class	Client;
 
-class   Channel;
-
 class Server {
 public:
     int port;
@@ -31,7 +29,6 @@ public:
     epoll_event ev, events[MAX_EVENTS];
     
     std::map<int, Client*> clients;
-    std::map<std::string, Channel*> channels;
 
     void run(char **av);
     void epoll_loop();
@@ -39,6 +36,13 @@ public:
     void accept_new_client();
     void handle_client_input(int fd);
     void remove_client(int fd);
+    void join_channel(const std::string &channel, int fd);
+    void remove_channel(const std::string &channel, int fd);
+    bool look_channel(const std::string &channel, int fd);
+    void broadcast_message(int sender_fd, const std::string &msg);
+    bool share_channel(int fd1, int fd2);
 };
+
+int check_join_command(const std::string &msg, std::string &out_channel);
 
 #endif

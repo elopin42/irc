@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <sys/epoll.h>
 #include <sstream>
+#include <algorithm>
 
 #include <vector>
 #include <set>

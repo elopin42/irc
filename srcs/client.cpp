@@ -1,4 +1,7 @@
 #include "../incl/client.hpp"
+#include "../incl/server.hpp"
+
+int check_join_command(const std::string &msg, std::string &out_channel);
 
 Client::Client(int fd, Server* serv)
 	: server(serv),
@@ -10,6 +13,7 @@ Client::Client(int fd, Server* serv)
 	  nick_ok(0),
 	  user_ok(0),
 	  registered(0),
+    channel_ok(0),
 	  lines_to_parse(),
 	  recv_buf(),
 	  send_buf(),
@@ -63,17 +67,31 @@ void Client::parse_lines()
 
 void Client::send_pending()
 {
-	std::vector<std::string>::iterator it = this->send_buf.begin();
-	if (it != this->send_buf.end())
-	{
-		send(this->fd, (*it).c_str(), (*it).size(), 0);
-		it = this->send_buf.erase(it);
-		if (this->send_buf.empty())
-		{
-			this->server->ev.events = EPOLLIN;
-			this->server->ev.data.fd = this->fd;
-			if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
-				throw std::runtime_error("epoll_ctl fail");
-		}
-	}
+    std::vector<std::string>::iterator it = this->send_buf.begin();
+    if (it != this->send_buf.end())
+    {
+        std::string channel;
+        int ch = check_join_command(*it, channel);
+        if (ch != -1)
+        {
+            // if (this->server->look_channel(channel, this->fd))
+            // {
+            //     this->server->remove_channel(channel, this->fd);
+            //     std::cout << "[ACTION] Client " << this->fd
+            //               << " left channel " << channel << std::endl;
+            // } // em gros sa sera utile pour supprimer un channel dedier sa
+                this->server->join_channel(channel, this->fd);
+        }
+        else
+            this->server->broadcast_message(this->fd, *it);
+        it = this->send_buf.erase(it);
+        if (this->send_buf.empty())
+        {
+            this->server->ev.events = EPOLLIN;
+            this->server->ev.data.fd = this->fd;
+            if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
+                throw std::runtime_error("epoll_ctl fail");
+        }
+    }
 }
+

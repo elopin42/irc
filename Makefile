@@ -4,6 +4,7 @@ CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98
 
 SRCS =	srcs/main.cpp \
 		srcs/server.cpp \
+		srcs/channel.cpp \
 		srcs/client.cpp
 
 OBJDIR = objs
