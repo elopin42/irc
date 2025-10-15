@@ -137,21 +137,24 @@ void Client::execute_command(const ParsedCommand &cmd)
             return;
         }
         std::string chan = cmd.args[0];
-        this->server->JOIN(chan, this->fd);
+        this->server->JOIN(cmd);
     }
 
-    else if (cmd.cmd == "PRIVMSG")
-    {
-        if (cmd.args.size() < 2)
-        {
-            send(this->fd, "461 PRIVMSG :Not enough parameters\r\n", 37, 0);
-            return;
-        }
-        std::string target = cmd.args[0];
-        std::string message = cmd.args[1];
-        std::string formatted = ":" + this->nickname + " PRIVMSG " + target + " :" + message + "\r\n";
-        this->server->broadcast_message(this->fd, formatted);
-    }
+    //redo please
+
+    
+    // else if (cmd.cmd == "PRIVMSG")
+    // {
+    //     if (cmd.args.size() < 2)
+    //     {
+    //         send(this->fd, "461 PRIVMSG :Not enough parameters\r\n", 37, 0);
+    //         return;
+    //     }
+    //     std::string target = cmd.args[0];
+    //     std::string message = cmd.args[1];
+    //     std::string formatted = ":" + this->nickname + " PRIVMSG " + target + " :" + message + "\r\n";
+    //     this->server->broadcast_message(this->fd, formatted);
+    // }
 
     else if (cmd.cmd == "QUIT")
     {
@@ -208,6 +211,7 @@ void Client::parse_lines()
                 cmd.args.push_back(token);
             }
         }
+        cmd.fd = this->fd;
         this->execute_command(cmd);
     }
 }

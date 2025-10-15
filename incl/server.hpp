@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 18:57:15 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/15 19:05:27 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 class Client;
 
 class Channel;
+
+struct ParsedCommand;
 
 class Server
 {
@@ -42,7 +44,7 @@ public:
     void remove_client(int fd);
 
     void create_channel(const std::string &name);
-    void remove_channel(const std::string &channel, int fd);//not implemented/rework
+    void remove_channel(const std::string &channel);//not implemented/rework
     // bool look_channel(const std::string &channel, int fd);   not really correctly implemented/ did not look enought into it please make sure it's useful
     // void broadcast_message(int sender_fd, const std::string &msg);
     // bool share_channel(int fd1, int fd2);
