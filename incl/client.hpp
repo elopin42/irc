@@ -6,12 +6,14 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:54:15 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 14:48:27 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/15 15:32:30 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "defs.hpp"
 #include "channel.hpp"
+
+class Server;
 
 class Client{
 public:
@@ -36,6 +38,8 @@ public:
 	void process_data();
 
 	void parse_lines();
+
+	void add_to_send_buf(const std::string &data);
 
 	void send_pending();
 

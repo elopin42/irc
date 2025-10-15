@@ -13,27 +13,29 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <string>
-#include <vector>
-#include <set>
+#include "defs.hpp"
 
 struct ParsedCommand {
     std::string cmd;
     std::vector<std::string> args;
+    int fd;
 };
 
 class Channel {
 public:
     std::string name;
     std::string topic;
-    std::set<std::string> users; // nicknames of users in the channel
-    std::set<std::string> operators; // nicknames of operators
+    std::vector<std::string> users; // nicknames of users in the channel
+    std::vector<std::string> operators; // nicknames of operators
 
     Channel(const std::string& name);
     ~Channel();
 
     void add_user(const std::string& nickname);
     void remove_user(const std::string& nickname);
+
+    bool is_user(const std::string &nickname);
+
     void set_topic(const std::string& new_topic);
     bool is_operator(const std::string& nickname) const;
     void add_operator(const std::string& nickname);

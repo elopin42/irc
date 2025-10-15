@@ -19,5 +19,6 @@
 #include <map>
 
 #define MAX_EVENTS 10
+#define ERR_USERONCHANNEL 443
 
 #endif

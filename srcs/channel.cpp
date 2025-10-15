@@ -5,13 +5,24 @@ Channel::Channel(const std::string& name) : name(name), topic("") {}
 Channel::~Channel() {}
 
 void Channel::add_user(const std::string& nickname) {
-    if (users.find(nickname) == users.end()) {
-        users.insert(nickname);
+    if (std::find(users.begin(), users.end(), nickname) == users.end()) {
+        users.push_back(nickname);
     }
 }
 
 void Channel::remove_user(const std::string& nickname) {
-    users.erase(nickname);
+    std::vector<std::string>::iterator it = std::find(users.begin(), users.end(), nickname);
+    if (it != users.end()) {
+        users.erase(it);
+    }
+}
+
+bool Channel::is_user(const std::string &nickname) {
+    if (std::find(this->users.begin(), this->users.end(), nickname) != this->users.end())
+    {
+        return 1;
+    }
+    return 0;
 }
 
 void Channel::set_topic(const std::string& new_topic) {
@@ -19,31 +30,30 @@ void Channel::set_topic(const std::string& new_topic) {
 }
 
 bool Channel::is_operator(const std::string& nickname) const {
-    return operators.find(nickname) != operators.end();
+    return std::find(operators.begin(), operators.end(), nickname) != operators.end();
 }
 
 void Channel::add_operator(const std::string& nickname) {
-    operators.insert(nickname);
+    if (std::find(operators.begin(), operators.end(), nickname) == operators.end()) {
+        operators.push_back(nickname);
+    }
 }
 
 void Channel::remove_operator(const std::string& nickname) {
-    operators.erase(nickname);
+    std::vector<std::string>::iterator it = std::find(operators.begin(), operators.end(), nickname);
+    if (it != operators.end()) {
+        operators.erase(it);
+    }
 }
+
+
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
-void Server::join_channel(const std::string &channel, int fd) {
-    std::vector<std::string> &joined = this->clients[fd]->joined_channels;
 
-    if (std::find(joined.begin(), joined.end(), channel) == joined.end()) {
-        joined.push_back(channel);
-        std::cout << "[INFO] Client " << fd << " joined channel " << channel << std::endl;
-        this->clients[fd]->channel_ok = true;
-    } else {
-        std::cout << "[WARN] Client " << fd << " already in channel " << channel << std::endl;
-    }
-}
+
+
 
 void Server::remove_channel(const std::string &channel, int fd) {
     std::vector<std::string> &joined = this->clients[fd]->joined_channels;

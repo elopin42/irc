@@ -41,13 +41,27 @@ void Client::process_data()
 
 void Client::execute_command(const ParsedCommand &cmd)
 {
-    std::cout << "[DEBUG] cmd:" << cmd.cmd << std::endl;
-    for (std::vector<std::string>::const_iterator it = cmd.args.begin(); it != cmd.args.end(); ++it)
-    {
-        std::cout << " " << *it;
-    }
     std::cout << std::endl;
-    if (cmd.cmd == "PASS")
+    if (cmd.cmd == "CAP")
+    {
+        if (cmd.args[0] == "LS")
+            this->add_to_send_buf(":irc.local CAP * LS :\r\n");
+        else if (cmd.args[0] == "END")
+        {
+            std::ostringstream ss;
+            ss << ":irc.local 001 " << this->nickname
+               << " :Welcome to the Internet Relay Chat network " << this->nickname << "\r\n";
+            ss << ":irc.local 002 " << this->nickname
+               << " :Your host is irc.local, running version 1.0\r\n";
+            ss << ":irc.local 003 " << this->nickname
+               << " :This server was created just for 42\r\n";
+            ss << ":irc.local 004 " << this->nickname
+               << " irc.local 1.0 o o\r\n";
+
+            this->add_to_send_buf(ss.str());
+        }
+    }
+    else if (cmd.cmd == "PASS")
     {
         if (this->registered)
         {
@@ -123,7 +137,7 @@ void Client::execute_command(const ParsedCommand &cmd)
             return;
         }
         std::string chan = cmd.args[0];
-        this->server->join_channel(chan, this->fd);
+        this->server->JOIN(chan, this->fd);
     }
 
     else if (cmd.cmd == "PRIVMSG")
@@ -194,58 +208,29 @@ void Client::parse_lines()
                 cmd.args.push_back(token);
             }
         }
-
-        // std::transform(cmd.cmd.begin(), cmd.cmd.end(), cmd.cmd.begin(), ::toupper);
-
-        // this->execute_command(cmd);
+        this->execute_command(cmd);
     }
 }
 
-// void Client::parse_lines()
-// {
-// 	//Travail de callista (parser les lines detecter les commandes et mettre dans un autre vector de commande a executer faire en sorte que les strings de ce vector soit simple a executer et claire, une structure serait meilleure) struct : le fd du sender, le mot de la cmd, ses args, et pour l'istat le "goat" ne sait pas car nul
-// 	std::vector<std::string>::iterator it = this->lines_to_parse.begin();
-// 	while (it != this->lines_to_parse.end())
-// 	{
-// 		// Broadcast temporaire
-// 		for (std::map<int, Client*>::iterator client_it = this->server->clients.begin(); client_it != this->server->clients.end(); ++client_it)
-// 		{
-// 			if (client_it->second != this)
-// 			{
-// 				bool was_empty = client_it->second->send_buf.empty();
-// 				client_it->second->send_buf.push_back(*it);
-// 				if (was_empty)
-// 				{
-// 					this->server->ev.events = EPOLLIN | EPOLLOUT;
-// 					this->server->ev.data.fd = client_it->first;
-// 					if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, client_it->first, &this->server->ev) == -1)
-// 						throw std::runtime_error("epoll_ctl fail");
-// 				}
-// 			}
-// 		}
-// 		it = this->lines_to_parse.erase(it);
-// 	}
-// }
+void Client::add_to_send_buf(const std::string &data)
+{
+    bool was_empty = this->send_buf.empty();
+    if (was_empty)
+    {
+        this->server->ev.events = EPOLLIN | EPOLLOUT;
+        this->server->ev.data.fd = this->fd;
+        if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
+            throw std::runtime_error("epoll_ctl fail");
+    }
+    this->send_buf.push_back(data);
+}
 
 void Client::send_pending()
 {
     std::vector<std::string>::iterator it = this->send_buf.begin();
     if (it != this->send_buf.end())
     {
-        std::string channel;
-        int ch = check_join_command(*it, channel);
-        if (ch != -1)
-        {
-            // if (this->server->look_channel(channel, this->fd))
-            // {
-            //     this->server->remove_channel(channel, this->fd);
-            //     std::cout << "[ACTION] Client " << this->fd
-            //               << " left channel " << channel << std::endl;
-            // } // em gros sa sera utile pour supprimer un channel dedier sa
-            this->server->join_channel(channel, this->fd);
-        }
-        else
-            this->server->broadcast_message(this->fd, *it);
+        send(this->fd, (*it).c_str(), (*it).size(), 0);
         it = this->send_buf.erase(it);
         if (this->send_buf.empty())
         {
