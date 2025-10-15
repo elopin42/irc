@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/14 12:46:48 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/15 14:51:33 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ public:
     void accept_new_client();
     void handle_client_input(int fd);
     void remove_client(int fd);
+
+    void create_channel(const std::string &name);
     void join_channel(const std::string &channel, int fd);
     void remove_channel(const std::string &channel, int fd);
     bool look_channel(const std::string &channel, int fd);

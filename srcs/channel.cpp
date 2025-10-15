@@ -1,3 +1,35 @@
+#include "../incl/channel.hpp"
+
+Channel::Channel(const std::string& name) : name(name), topic("") {}
+
+Channel::~Channel() {}
+
+void Channel::add_user(const std::string& nickname) {
+    if (users.find(nickname) == users.end()) {
+        users.insert(nickname);
+    }
+}
+
+void Channel::remove_user(const std::string& nickname) {
+    users.erase(nickname);
+}
+
+void Channel::set_topic(const std::string& new_topic) {
+    topic = new_topic;
+}
+
+bool Channel::is_operator(const std::string& nickname) const {
+    return operators.find(nickname) != operators.end();
+}
+
+void Channel::add_operator(const std::string& nickname) {
+    operators.insert(nickname);
+}
+
+void Channel::remove_operator(const std::string& nickname) {
+    operators.erase(nickname);
+}
+
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
