@@ -13,31 +13,38 @@
 #include "defs.hpp"
 #include "server.hpp"
 
+struct ParsedCommand {
+	std::string cmd;
+	std::vector<std::string> args;
+};
+
 class Client{
 public:
-    Server* server;
-    int fd;
-    std::string nickname;
-    std::string username;
-    std::string realname;
-    bool pass_ok;
-    bool nick_ok;
-    bool user_ok;
-    bool registered;
-    bool channel_ok;
-    std::vector<std::string> lines_to_parse;
-    std::string recv_buf;
-    std::vector<std::string> send_buf;
-    std::vector<std::string> joined_channels;
+	Server* server;
+	int fd;
+	std::string nickname;
+	std::string username;
+	std::string realname;
+	bool pass_ok;
+	bool nick_ok;
+	bool user_ok;
+	bool registered;
+	bool channel_ok;
+	std::vector<std::string> lines_to_parse;
+	std::string recv_buf;
+	std::vector<std::string> send_buf;
+	std::vector<std::string> joined_channels;
 
-    explicit Client(int fd, Server* serv); // explicit force la creation d'une classe sous la forme: Client c(42)
-    ~Client();
-    
-    void process_data();
+	explicit Client(int fd, Server* serv); // explicit force la creation d'une classe sous la forme: Client c(42)
+	~Client();
+	
+	void process_data();
 
-    void parse_lines();
+	void parse_lines();
 
-    void send_pending();
+	void send_pending();
 
-    // void client_monitor()
+	void execute_command(const ParsedCommand &cmd);
+
+	// void client_monitor()
 };
