@@ -208,8 +208,11 @@ void Client::Nickname(std::string nick)
 
 void Server::NICK(const ParsedCommand &cmd)
 {
-    if (cmd.args.empty())
+
+    if (this->clients.find(cmd.fd) == this->clients.end() || !this->clients[cmd.fd] || cmd.args.empty())
+    {
         return;
+    }
 
     Client *c = this->clients[cmd.fd];
     std::string newnick = cmd.args[0];
@@ -229,6 +232,10 @@ void Server::NICK(const ParsedCommand &cmd)
 
 void Server::USER(const ParsedCommand &cmd)
 {
+    if (this->clients.find(cmd.fd) == this->clients.end() || !this->clients[cmd.fd])
+    {
+        return;
+    }
     if (cmd.args.size() < 4)
     {
         Client *c = this->clients[cmd.fd];
