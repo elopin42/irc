@@ -9,12 +9,13 @@ Client::Client(int fd, Server *serv)
       nickname(),
       username(),
       realname(),
+      temp_pass(""),
       pass_ok(0),
       nick_ok(0),
       user_ok(0),
       registered(0),
-      channel_ok(0),
-      kick_user(0),
+      kick(0),
+      first_try(1),
       lines_to_parse(),
       recv_buf(),
       send_buf(),
@@ -102,10 +103,15 @@ void Client::send_pending()
         it = this->send_buf.erase(it);
         if (this->send_buf.empty())
         {
-            this->server->ev.events = EPOLLIN;
-            this->server->ev.data.fd = this->fd;
-            if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
-                throw std::runtime_error("epoll_ctl fail");
+            if (this->kick)
+                this->server->remove_client(this->fd);
+            else
+            {
+                this->server->ev.events = EPOLLIN;
+                this->server->ev.data.fd = this->fd;
+                if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
+                    throw std::runtime_error("epoll_ctl fail");
+            }
         }
     }
 }

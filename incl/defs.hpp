@@ -31,5 +31,7 @@
 
 #define ERR_USERONCHANNEL 443
 
+bool isValidNickname(const std::string &nick);
+bool isValidUsername(const std::string &username);
 
 #endif

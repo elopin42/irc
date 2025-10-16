@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/16 16:48:42 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/16 21:36:53 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ void Server::initialize_command_map()
     this->command_map["PASS"] = &Server::PASS;
     this->command_map["NICK"] = &Server::NICK;
     this->command_map["USER"] = &Server::USER;
-    // this->command_map["QUIT"] = &Server::QUIT;
+    this->command_map["QUIT"] = &Server::QUIT;
     // this->command_map["NOTICE"] = &Server::NOTICE;
     // this->command_map["PART"] = &Server::PART;
     // this->command_map["TOPIC"] = &Server::TOPIC;

@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:54:15 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 19:27:36 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/16 21:33:46 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,13 @@ public:
 	std::string nickname;
 	std::string username;
 	std::string realname;
+	std::string temp_pass;
 	bool pass_ok;
 	bool nick_ok;
 	bool user_ok;
 	bool registered;
-	bool channel_ok;
-	bool kick_user;
+	bool kick;
+	bool first_try;
 	std::vector<std::string> lines_to_parse;
 	std::string recv_buf;
 	std::vector<std::string> send_buf;
@@ -50,9 +51,4 @@ public:
 	void send_pending();
 
 	void execute_command(const ParsedCommand &cmd);
-
-  void Nickname(std::string nick);
-
-  void username_realname(std::string cmd);
-
 };

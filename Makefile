@@ -1,12 +1,13 @@
 NAME = ircserv
 CC = c++
-CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98
+CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 
-SRCS =	srcs/main.cpp	\
-		srcs/server.cpp \
-		srcs/channel.cpp\
-		srcs/client.cpp	\
-		srcs/commands.cpp
+SRCS =	srcs/main.cpp		\
+		srcs/server.cpp 	\
+		srcs/channel.cpp	\
+		srcs/client.cpp		\
+		srcs/commands.cpp	\
+		srcs/defs.cpp		\
 
 OBJDIR = objs
 OBJS = $(SRCS:srcs/%.cpp=$(OBJDIR)/%.o)

@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/16 16:19:26 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/16 22:19:07 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../incl/client.hpp"
 #include "../incl/channel.hpp"
 
-//fully implemented
+// fully implemented
 void Server::PRIVMSG(const ParsedCommand &cmd)
 {
     // Check arguments
@@ -98,11 +98,11 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
     }
 }
 
-//not fully
+// not fully
 void Server::JOIN(const ParsedCommand &cmd)
 {
     if (!this->clients[cmd.fd]->registered)
-      return ;
+        return;
     // syntax verification a faire voir discord + plusieurs channels peuvent etre join avec une seule commande donc ajouter cette possibilite svp (simple boucle)
     // et enforce que le nom du channel commence par un # + interdire certains characteres precise sur discord (50 characters max # included)
     if (this->channels.find(cmd.args[0]) == this->channels.end()) // does not exist yet
@@ -125,7 +125,7 @@ void Server::JOIN(const ParsedCommand &cmd)
     std::cout << "[DEBUG] added client " << this->clients[cmd.fd]->nickname << " to channel " << cmd.args[0] << std::endl;
 }
 
-//fully
+// fully
 void Server::PING(const ParsedCommand &cmd)
 {
     if (cmd.args.empty())
@@ -142,7 +142,7 @@ void Server::PING(const ParsedCommand &cmd)
     }
 }
 
-//fully
+// fully
 void Server::PONG(const ParsedCommand &cmd)
 {
     // PONG is sent by the client in response to our PING
@@ -151,7 +151,7 @@ void Server::PONG(const ParsedCommand &cmd)
     (void)cmd;
 }
 
-//fully
+// fully
 void Server::CAP(const ParsedCommand &cmd)
 {
     if (cmd.args.size() > 0 && cmd.args[0] == "LS")
@@ -160,11 +160,11 @@ void Server::CAP(const ParsedCommand &cmd)
     }
     else if (cmd.args.size() > 0 && cmd.args[0] == "END")
     {
-        Client *c = this->clients[cmd.fd];
-        this->try_register(c);
+        this->try_register(this->clients[cmd.fd]);
     }
 }
 
+//fully
 void Server::PASS(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
@@ -178,106 +178,107 @@ void Server::PASS(const ParsedCommand &cmd)
 
     if (cmd.args.empty())
     {
-        std::string err = ":irc.local 461 PASS :Not enough parameters\r\n";
+        std::string err = ":irc.local 461 " + client->nickname + " PASS :Not enough parameters\r\n";
         client->add_to_send_buf(err);
         return;
     }
 
-    std::string password = cmd.args[0];
-
-    const std::string server_pass = this->password;
-    if (password != server_pass)
-    {
-        std::string err = ":irc.local 464 " + client->nickname + " :Password incorrect\r\n";
-        client->add_to_send_buf(err);
-        std::cout << "[AUTH FAIL] Client " << cmd.fd << " tried PASS " << password << std::endl;
-        client->kick_user = true;
-        return;
-    }
-
+    client->temp_pass = cmd.args[0];
     client->pass_ok = true;
-    std::cout << "[AUTH OK] Client " << cmd.fd << " authenticated with PASS" << std::endl;
+    std::cout << "[INFO] Client fd:" << client->fd << " set the temp pass" << std::endl;
 }
 
-void Client::Nickname(std::string nick)
-{
-  this->nickname = nick;
-  nick_ok = true;
-  std::cout << "[NICK] nickname = " << this->nickname << std::endl;
-}
-
-
+//fully
 void Server::NICK(const ParsedCommand &cmd)
 {
+    Client *client = this->clients[cmd.fd];
 
-    if (this->clients.find(cmd.fd) == this->clients.end() || !this->clients[cmd.fd] || cmd.args.empty())
+    if (cmd.args.empty())
     {
+        std::string err = ":irc.local 431 * :No nickname given\r\n";
+        client->add_to_send_buf(err);
         return;
     }
-    if (!this->clients[cmd.fd]->pass_ok)
+
+    if (!isValidNickname(cmd.args[0]))
     {
-        this->clients[cmd.fd]->kick_user = true;
-        return ;
+        std::string err = ":irc.local 432 *" + cmd.args[0] + ":Erroneous nickname";
+        client->add_to_send_buf(err);
+        return;
     }
 
-    Client *c = this->clients[cmd.fd];
-    std::string newnick = cmd.args[0];
+    std::string nick = cmd.args[0];
 
-    for (std::map<int, Client*>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
+    for (std::map<int, Client *>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
     {
-        if (it->second && it->second->nickname == newnick)
+        if (it->second && it->second->nickname == nick)
         {
-            std::string err = ":irc.local 433 * " + newnick + " :Nickname is already in use\r\n";
-            c->add_to_send_buf(err);
+            std::string err = ":irc.local 433 * " + nick + " :Nickname is already in use\r\n";
+            client->add_to_send_buf(err);
             return;
         }
     }
 
-    c->Nickname(newnick);
+    client->nickname = nick;
+    client->nick_ok = true;
+    if (!client->first_try)
+        this->try_register(client);
+    std::cout << "[INFO] Client fd:" << client->fd << " nickname = " << client->nickname << std::endl;
 }
 
+//fully
 void Server::USER(const ParsedCommand &cmd)
 {
-    if (this->clients.find(cmd.fd) == this->clients.end() || !this->clients[cmd.fd])
-    {
-        return;
-    }
-    if (!this->clients[cmd.fd]->pass_ok)
-    {
-        this->clients[cmd.fd]->kick_user = true;
-        return ;
-    }
+    Client *client = this->clients[cmd.fd];
     if (cmd.args.size() < 4)
     {
-        Client *c = this->clients[cmd.fd];
-        c->add_to_send_buf(":irc.local 461 USER :Not enough parameters\r\n");
+        std::string err = ":irc.local 461 " + client->nickname + " USER :Not enough parameters\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+    if (client->user_ok)
+    {
+        std::string err = ":irc.local 462 " + client->nickname + " :You may not reregister\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+    if (!isValidUsername(cmd.args[0]))
+    {
+        std::string err = ":irc.local 468 * " + client->nickname + " :Invalid username\r\n";
+        client->add_to_send_buf(err);
         return;
     }
 
-    Client *c = this->clients[cmd.fd];
-    c->username_realname("USER " + cmd.args[0] + " " + cmd.args[1] + " " + cmd.args[2] + " :" + cmd.args[3]);
+    client->username = cmd.args[0];
+    client->user_ok = true;
+    if (!client->first_try)
+        this->try_register(client);
+    std::cout << "[INFO] Client fd:" << client->fd << " nickname = " << client->nickname << std::endl;
 }
 
-void Client::username_realname(std::string cmd)
+//not fully
+void Server::QUIT(const ParsedCommand &cmd)
 {
-    std::istringstream iss(cmd);
-    std::string command, username, mode, unused;
-
-    iss >> command >> username >> mode >> unused;
-
-    size_t colon_pos = cmd.find(':', 0);
-    std::string realname;
-    if (colon_pos != std::string::npos)
-        realname = cmd.substr(colon_pos + 1);
-    else
-        realname = username;
-
-    this->username = username;
-    this->realname = realname;
-    this->user_ok = true;
-    std::cout << "[USER] username=" << username
-              << " | realname=" << realname << std::endl;
+    //prevenir tout les channels duquel fesait parti le client avec cmd.args[0] si donne (regarder output format avec chatgpt)
+    Client *client = this->clients[cmd.fd];
+    client->kick = true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void Server::try_register(Client *c)
@@ -285,10 +286,7 @@ void Server::try_register(Client *c)
     if (c->registered)
         return;
 
-    if (c->kick_user)
-      remove_client(c->fd);
-
-    if (c->pass_ok && c->nick_ok && c->user_ok)
+    if (c->pass_ok && c->nick_ok && c->user_ok && this->password == c->temp_pass)
     {
         c->registered = true;
 
@@ -303,7 +301,18 @@ void Server::try_register(Client *c)
            << " irc.local 1.0 o o\r\n";
 
         c->add_to_send_buf(ss.str());
-        std::cout << "[REGISTER] Client " << c->fd << " registered successfully (" 
-                  << c->nickname << ")" << std::endl;
+        std::cout << "[INFO] Client fd:" << c->fd << " registered succesfully!" << std::endl;
+    }
+    else
+    {
+        c->first_try = false;
+        if (this->password != c->temp_pass)
+        {
+            std::ostringstream ss;
+            ss << ":irc.local 464 * :Password incorrect\r\n";
+            c->add_to_send_buf(ss.str());
+            c->kick = true;
+        }
+        std::cout << "[ERROR] Client fd:" << c->fd << " failed to register!" << std::endl;
     }
 }
