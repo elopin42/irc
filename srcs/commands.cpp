@@ -101,6 +101,8 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
 //not fully
 void Server::JOIN(const ParsedCommand &cmd)
 {
+    if (!this->clients[cmd.fd]->registered)
+      return ;
     // syntax verification a faire voir discord + plusieurs channels peuvent etre join avec une seule commande donc ajouter cette possibilite svp (simple boucle)
     // et enforce que le nom du channel commence par un # + interdire certains characteres precise sur discord (50 characters max # included)
     if (this->channels.find(cmd.args[0]) == this->channels.end()) // does not exist yet
