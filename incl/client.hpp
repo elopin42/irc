@@ -32,6 +32,7 @@ public:
 	bool user_ok;
 	bool registered;
 	bool channel_ok;
+	bool kick_user;
 	std::vector<std::string> lines_to_parse;
 	std::string recv_buf;
 	std::vector<std::string> send_buf;

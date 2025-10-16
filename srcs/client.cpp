@@ -14,6 +14,7 @@ Client::Client(int fd, Server *serv)
       user_ok(0),
       registered(0),
       channel_ok(0),
+      kick_user(0),
       lines_to_parse(),
       recv_buf(),
       send_buf(),
