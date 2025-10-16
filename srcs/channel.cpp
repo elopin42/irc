@@ -15,7 +15,6 @@ void Channel::remove_user(const std::string& nickname) {
     if (it != users.end()) {
         users.erase(it);
     }
-    std::cout << "remove user" << std::endl;
 }
 
 bool Channel::is_user(const std::string &nickname) {
