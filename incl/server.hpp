@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 19:26:09 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/16 16:10:25 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,20 @@ public:
 
     std::map<int, Client *> clients;
     std::map<std::string, Channel *> channels;
+    std::vector<std::string> handled_commands;
+    std::map<std::string, void (Server::*)(const ParsedCommand &)> command_map;
 
     void run(char **av);
     void epoll_loop();
+    void initialize_handled_commands();
+    void initialize_command_map();
+    void execute_command(const ParsedCommand &cmd);
 
     void accept_new_client();
     void handle_client_input(int fd);
     void remove_client(int fd);
+
+    int resolve_user_fd(const std::string &user);
 
     void create_channel(const std::string &name);
     void remove_channel(const std::string &channel);//not implemented/rework

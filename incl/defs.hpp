@@ -19,6 +19,17 @@
 #include <map>
 
 #define MAX_EVENTS 10
+
+#define ERR_NOSUCHNICK       401  // No such nick
+#define ERR_NOSUCHCHANNEL    403  // No such channel
+#define ERR_CANNOTSENDTOCHAN 404  // Cannot send to channel
+#define ERR_TOOMANYCHANNELS  405  // You have joined too many channels
+#define ERR_NORECIPIENT      411  // No recipient given (PRIVMSG)
+#define ERR_NOTEXTTOSEND     412  // No text to send
+#define ERR_UNKNOWNCOMMAND   421  // Unknown command
+#define ERR_NICKCOLLISION    436  // Nick collision
+
 #define ERR_USERONCHANNEL 443
+
 
 #endif

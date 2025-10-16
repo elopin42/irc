@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 19:52:15 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/16 16:48:42 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,89 @@
 #include "../incl/client.hpp"
 #include "../incl/channel.hpp"
 
+int Server::resolve_user_fd(const std::string &user)
+{
+    std::map<int, Client*>::iterator it;
+    for (it = this->clients.begin(); it != this->clients.end(); ++it)
+    {
+        if (this->clients[it->first]->nickname == user)
+            return it->first;
+    }
+    return -1;
+}
+
 void Server::create_channel(const std::string &name)
 {
     this->channels[name] = new Channel(name);
     std::cout << "[DEBUG] created channel " << name << std::endl;
+}
+
+void Server::initialize_handled_commands()
+{
+    this->handled_commands.push_back("PASS");
+    this->handled_commands.push_back("NICK");
+    this->handled_commands.push_back("USER");
+    this->handled_commands.push_back("QUIT");
+    this->handled_commands.push_back("PING");
+    this->handled_commands.push_back("PONG");
+    this->handled_commands.push_back("CAP");
+    this->handled_commands.push_back("PRIVMSG");
+    this->handled_commands.push_back("NOTICE");
+    this->handled_commands.push_back("JOIN");
+    this->handled_commands.push_back("PART");
+    this->handled_commands.push_back("TOPIC");
+    this->handled_commands.push_back("MODE");
+    this->handled_commands.push_back("INVITE");
+    this->handled_commands.push_back("KICK");
+    this->handled_commands.push_back("WHO");
+    this->handled_commands.push_back("WHOIS");
+    this->handled_commands.push_back("NAMES");
+    this->handled_commands.push_back("LIST");
+    this->handled_commands.push_back("ERROR");
+
+    this->initialize_command_map();
+}
+
+void Server::execute_command(const ParsedCommand &cmd)
+{
+    // Check if command is in the command map (implemented)
+    if (this->command_map.find(cmd.cmd) != this->command_map.end())
+    {
+        // Call the corresponding server method
+        (this->*command_map[cmd.cmd])(cmd);
+        return;
+    }
+
+    // Command is handled but not implemented yet
+    std::string err = "421 " + cmd.cmd + " :Command not implemented\r\n";
+    send(cmd.fd, err.c_str(), err.size(), 0);
+}
+
+void Server::initialize_command_map()
+{
+    // Implemented commands
+    this->command_map["PING"] = &Server::PING;
+    this->command_map["PONG"] = &Server::PONG;
+    this->command_map["PRIVMSG"] = &Server::PRIVMSG;
+    this->command_map["JOIN"] = &Server::JOIN;
+    this->command_map["CAP"] = &Server::CAP;
+
+    // Not implemented yet
+    // this->command_map["PASS"] = &Server::PASS;
+    // this->command_map["NICK"] = &Server::NICK;
+    // this->command_map["USER"] = &Server::USER;
+    // this->command_map["QUIT"] = &Server::QUIT;
+    // this->command_map["NOTICE"] = &Server::NOTICE;
+    // this->command_map["PART"] = &Server::PART;
+    // this->command_map["TOPIC"] = &Server::TOPIC;
+    // this->command_map["MODE"] = &Server::MODE;
+    // this->command_map["INVITE"] = &Server::INVITE;
+    // this->command_map["KICK"] = &Server::KICK;
+    // this->command_map["WHO"] = &Server::WHO;
+    // this->command_map["WHOIS"] = &Server::WHOIS;
+    // this->command_map["NAMES"] = &Server::NAMES;
+    // this->command_map["LIST"] = &Server::LIST;
+    // this->command_map["ERROR"] = &Server::ERROR;
 }
 
 void Server::remove_channel(const std::string &channel)
@@ -78,6 +157,7 @@ void Server::run(char **av)
 {
     this->port = atoi(av[1]);
     this->password = av[2];
+    this->initialize_handled_commands();
 
     this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->server_fd == -1)
@@ -144,7 +224,7 @@ void Server::epoll_loop()
             {
                 if (this->events[i].events & EPOLLIN)
                     this->handle_client_input(this->events[i].data.fd);
-                else if (this->events[i].events & EPOLLOUT)
+                if (this->events[i].events & EPOLLOUT)
                     this->clients[this->events[i].data.fd]->send_pending();
             }
         }
