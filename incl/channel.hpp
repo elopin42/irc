@@ -15,12 +15,6 @@
 
 #include "defs.hpp"
 
-struct ParsedCommand {
-    std::string cmd;
-    std::vector<std::string> args;
-    int fd;
-};
-
 class Channel {
 public:
     std::string name;

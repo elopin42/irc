@@ -6,14 +6,19 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/13 17:54:15 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 15:32:30 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/15 19:27:36 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "defs.hpp"
-#include "channel.hpp"
 
 class Server;
+
+struct ParsedCommand {
+    std::string cmd;
+    std::vector<std::string> args;
+    int fd;
+};
 
 class Client{
 public:

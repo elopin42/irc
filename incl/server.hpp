@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/15 19:05:27 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/15 19:26:09 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ public:
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!//
     //Pretty much every command here, has error codes you have to send, not only in case of errors but also in case of success,//
     //Please ask chatgpt for how to format your message for every different situation for irssi to handle it correctly         //
-    //AND NEVER USE SEND DIRECTLY, ONLY USE ADD_TO_SEND_BUFFER                                                                 //
+    //AND NEVER USE SEND DIRECTLY, ONLY USE ADD_TO_SEND_BUFFER AS THE CLIENT                                                   //
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!//
     
     // Connection / registration
