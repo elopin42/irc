@@ -175,5 +175,54 @@ void Server::CAP(const ParsedCommand &cmd)
 
 void Server::PASS(const ParsedCommand &cmd)
 {
-    
+   (void) cmd; 
+}
+
+void Client::Nickname(std::string nick)
+{
+  this->nickname = nick;
+  nick_ok = true;
+  std::cout << "[NICK] nickname = " << this->nickname << std::endl;
+}
+
+
+void Server::NICK(const ParsedCommand &cmd)
+{
+    if (cmd.args.size() < 1)
+        return;
+
+    Client *c = this->clients[cmd.fd];
+    c->Nickname(cmd.args[0]);
+}
+
+
+void Server::USER(const ParsedCommand &cmd)
+{
+    std::string raw;
+    for (size_t i = 0; i < cmd.args.size(); i++)
+        raw += cmd.args[i] + " ";
+
+    Client *c = this->clients[cmd.fd];
+    c->username_realname("USER " + raw);
+}
+
+void Client::username_realname(std::string cmd)
+{
+    std::istringstream iss(cmd);
+    std::string command, username, mode, unused;
+
+    iss >> command >> username >> mode >> unused;
+
+    size_t colon_pos = cmd.find(':', 0);
+    std::string realname;
+    if (colon_pos != std::string::npos)
+        realname = cmd.substr(colon_pos + 1);
+    else
+        realname = username;
+
+    this->username = username;
+    this->realname = realname;
+    this->user_ok = true;
+    std::cout << "[USER] username=" << username
+              << " | realname=" << realname << std::endl;
 }

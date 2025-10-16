@@ -91,6 +91,7 @@ public:
     void NAMES(const ParsedCommand &cmd); // Optional: show members of a channel
     void LIST(const ParsedCommand &cmd);  // Optional: list channels
     void ERROR(const ParsedCommand &cmd); // Optional: internal errors ?
+
 };
 
 int check_join_command(const std::string &msg, std::string &out_channel);// ????????????

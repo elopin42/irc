@@ -50,5 +50,8 @@ public:
 
 	void execute_command(const ParsedCommand &cmd);
 
-	// void client_monitor()
+  void Nickname(std::string nick);
+
+  void username_realname(std::string cmd);
+
 };
