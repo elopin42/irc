@@ -158,24 +158,44 @@ void Server::CAP(const ParsedCommand &cmd)
     }
     else if (cmd.args.size() > 0 && cmd.args[0] == "END")
     {
-        std::ostringstream ss;
-        ss << ":irc.local 001 " << this->clients[cmd.fd]->nickname
-           << " :Welcome to the Internet Relay Chat network " << this->clients[cmd.fd]->nickname << "\r\n";
-        ss << ":irc.local 002 " << this->clients[cmd.fd]->nickname
-           << " :Your host is irc.local, running version 1.0\r\n";
-        ss << ":irc.local 003 " << this->clients[cmd.fd]->nickname
-           << " :This server was created just for 42\r\n";
-        ss << ":irc.local 004 " << this->clients[cmd.fd]->nickname
-           << " irc.local 1.0 o o\r\n";
-
-        this->clients[cmd.fd]->add_to_send_buf(ss.str());
+        Client *c = this->clients[cmd.fd];
+        this->try_register(c);
     }
-    // Pas de gestion d'erreur pour les autres cas
 }
 
 void Server::PASS(const ParsedCommand &cmd)
 {
-   (void) cmd; 
+    Client *client = this->clients[cmd.fd];
+
+    if (client->registered)
+    {
+        std::string err = ":irc.local 462 " + client->nickname + " :You may not reregister\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+
+    if (cmd.args.empty())
+    {
+        std::string err = ":irc.local 461 PASS :Not enough parameters\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+
+    std::string password = cmd.args[0];
+
+    const std::string server_pass = this->password;
+    if (password != server_pass)
+    {
+        std::string err = ":irc.local 464 " + client->nickname + " :Password incorrect\r\n";
+        client->add_to_send_buf(err);
+        std::cout << "[AUTH FAIL] Client " << cmd.fd << " tried PASS " << password << std::endl;
+        close(cmd.fd);
+        this->clients.erase(cmd.fd);
+        return;
+    }
+
+    client->pass_ok = true;
+    std::cout << "[AUTH OK] Client " << cmd.fd << " authenticated with PASS" << std::endl;
 }
 
 void Client::Nickname(std::string nick)
@@ -188,22 +208,38 @@ void Client::Nickname(std::string nick)
 
 void Server::NICK(const ParsedCommand &cmd)
 {
-    if (cmd.args.size() < 1)
+    if (cmd.args.empty())
         return;
 
     Client *c = this->clients[cmd.fd];
-    c->Nickname(cmd.args[0]);
-}
+    std::string newnick = cmd.args[0];
 
+    for (std::map<int, Client*>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
+    {
+        if (it->second && it->second->nickname == newnick)
+        {
+            std::string err = ":irc.local 433 * " + newnick + " :Nickname is already in use\r\n";
+            c->add_to_send_buf(err);
+            return;
+        }
+    }
+
+    c->Nickname(newnick);
+    this->try_register(c);
+}
 
 void Server::USER(const ParsedCommand &cmd)
 {
-    std::string raw;
-    for (size_t i = 0; i < cmd.args.size(); i++)
-        raw += cmd.args[i] + " ";
+    if (cmd.args.size() < 4)
+    {
+        Client *c = this->clients[cmd.fd];
+        c->add_to_send_buf(":irc.local 461 USER :Not enough parameters\r\n");
+        return;
+    }
 
     Client *c = this->clients[cmd.fd];
-    c->username_realname("USER " + raw);
+    c->username_realname("USER " + cmd.args[0] + " " + cmd.args[1] + " " + cmd.args[2] + " :" + cmd.args[3]);
+    this->try_register(c);
 }
 
 void Client::username_realname(std::string cmd)
@@ -225,4 +261,30 @@ void Client::username_realname(std::string cmd)
     this->user_ok = true;
     std::cout << "[USER] username=" << username
               << " | realname=" << realname << std::endl;
+}
+
+
+void Server::try_register(Client *c)
+{
+    if (c->registered)
+        return;
+
+    if (c->pass_ok && c->nick_ok && c->user_ok)
+    {
+        c->registered = true;
+
+        std::ostringstream ss;
+        ss << ":irc.local 001 " << c->nickname
+           << " :Welcome to the Internet Relay Chat network " << c->nickname << "\r\n";
+        ss << ":irc.local 002 " << c->nickname
+           << " :Your host is irc.local, running version 1.0\r\n";
+        ss << ":irc.local 003 " << c->nickname
+           << " :This server was created just for 42\r\n";
+        ss << ":irc.local 004 " << c->nickname
+           << " irc.local 1.0 o o\r\n";
+
+        c->add_to_send_buf(ss.str());
+        std::cout << "[REGISTER] Client " << c->fd << " registered successfully (" 
+                  << c->nickname << ")" << std::endl;
+    }
 }

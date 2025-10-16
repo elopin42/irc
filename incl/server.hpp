@@ -70,6 +70,7 @@ public:
     void PING(const ParsedCommand &cmd); //sends PONG to the client example Client: "PING :1724016534"  Server: "PONG :1724016534"
     void PONG(const ParsedCommand &cmd); //we can send a PING ourselves to the client so we have the handle receiving PONG also but basically does nothing
     void CAP(const ParsedCommand &cmd);  //handle CAP LS / CAP END
+    void try_register(Client *c);
 
     // Messaging
     void PRIVMSG(const ParsedCommand &cmd); //sends a message to a channel or a client, you know it's a channel when it's preceded by #
