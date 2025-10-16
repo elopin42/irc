@@ -189,8 +189,7 @@ void Server::PASS(const ParsedCommand &cmd)
         std::string err = ":irc.local 464 " + client->nickname + " :Password incorrect\r\n";
         client->add_to_send_buf(err);
         std::cout << "[AUTH FAIL] Client " << cmd.fd << " tried PASS " << password << std::endl;
-        close(cmd.fd);
-        this->clients.erase(cmd.fd);
+        this->remove_client(cmd.fd);
         return;
     }
 
@@ -215,8 +214,7 @@ void Server::NICK(const ParsedCommand &cmd)
     }
     if (!this->clients[cmd.fd]->pass_ok)
     {
-        close(cmd.fd);
-        this->clients.erase(cmd.fd);
+      this->remove_client(cmd.fd);
         return ;
     }
 
@@ -244,8 +242,7 @@ void Server::USER(const ParsedCommand &cmd)
     }
     if (!this->clients[cmd.fd]->pass_ok)
     {
-        close(cmd.fd);
-        this->clients.erase(cmd.fd);
+        this->remove_client(cmd.fd);
         return ;
     }
     if (cmd.args.size() < 4)
