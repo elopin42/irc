@@ -225,7 +225,6 @@ void Server::NICK(const ParsedCommand &cmd)
     }
 
     c->Nickname(newnick);
-    this->try_register(c);
 }
 
 void Server::USER(const ParsedCommand &cmd)
@@ -239,7 +238,6 @@ void Server::USER(const ParsedCommand &cmd)
 
     Client *c = this->clients[cmd.fd];
     c->username_realname("USER " + cmd.args[0] + " " + cmd.args[1] + " " + cmd.args[2] + " :" + cmd.args[3]);
-    this->try_register(c);
 }
 
 void Client::username_realname(std::string cmd)

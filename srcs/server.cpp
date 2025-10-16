@@ -82,7 +82,7 @@ void Server::initialize_command_map()
     this->command_map["CAP"] = &Server::CAP;
 
     // Not implemented yet
-    // this->command_map["PASS"] = &Server::PASS;
+    this->command_map["PASS"] = &Server::PASS;
     this->command_map["NICK"] = &Server::NICK;
     this->command_map["USER"] = &Server::USER;
     // this->command_map["QUIT"] = &Server::QUIT;
