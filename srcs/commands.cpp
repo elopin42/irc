@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/16 22:19:07 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/17 15:53:10 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,46 +98,15 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
     }
 }
 
-std::vector<std::string> split(const std::string &s, char delimiter)
-{
-    std::vector<std::string> tokens;
-    std::stringstream ss(s);
-    std::string token;
-
-    while (std::getline(ss, token, delimiter))
-    {
-        if (!token.empty())
-            tokens.push_back(token);
-    }
-    return tokens;
-}
-
-bool is_valid_channel_name(const std::string &name)
-{
-    if (name.empty() || name[0] != '#')
-        return false;
-    if (name.size() > 50)
-        return false;
-    for (size_t i = 1; i < name.size(); ++i)
-    {
-        if (name[i] == ' ' || name[i] == ',' || name[i] == 7)
-            return false;
-    }
-    return true;
-}
-
-
 // not fully
+// :irc.example.com 461 <nick> JOIN :Invalid syntax – do not use spaces in channel list
+//dans le cas d'espace au mauvais endroit
 void Server::JOIN(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
 
     if (!this->clients[cmd.fd]->registered)
         return;
-    // // syntax verification a faire voir discord + plusieurs channels peuvent etre join avec une seule commande donc ajouter cette possibilite svp (simple boucle)
-    // // et enforce que le nom du channel commence par un # + interdire certains characteres precise sur discord (50 characters max # included)
-    // if (this->channels.find(cmd.args[0]) == this->channels.end()) // does not exist yet
-    //     this->create_channel(cmd.args[0]);
     if (cmd.args.empty())
     {
         std::ostringstream ss;
@@ -188,7 +157,6 @@ void Server::JOIN(const ParsedCommand &cmd)
         join_msg << ":" << client->nickname << "!" << client->username
                     << "@localhost JOIN " << channel_name << "\r\n";
         
-        //channel->broadcast_message(client->nickname, join_msg.str());
         client->add_to_send_buf(join_msg.str());
 
         std::ostringstream name_list;
@@ -206,24 +174,7 @@ void Server::JOIN(const ParsedCommand &cmd)
         end_names << ":irc.local 366 " << client->nickname << " " << channel_name << " :End of NAMES list\r\n";
         client->add_to_send_buf(end_names.str());
     }
-    // else
-    // {
-    //     if (this->channels[cmd.args[0]]->is_user(this->clients[cmd.fd]->nickname))
-    //     {
-    //         std::cout << "[WARN] client " << this->clients[cmd.fd]->nickname << " is already on channel " << cmd.args[0] << std::endl;
-    //         std::ostringstream ss;
-    //         ss << ":irc.local " << ERR_USERONCHANNEL << " "
-    //            << this->clients[cmd.fd]->nickname << " "
-    //            << cmd.args[0] << " :is already on channel\r\n";
-
-    //         this->clients[cmd.fd]->add_to_send_buf(ss.str());
-    //         return;
-    //     }
-    // }
-    // this->channels[cmd.args[0]]->add_user(this->clients[cmd.fd]->nickname);
-    // std::cout << "[DEBUG] added client " << this->clients[cmd.fd]->nickname << " to channel " << cmd.args[0] << std::endl;
 }
-//49 char apres # et un seul channel a la fois pour l'instant
 // fully
 void Server::PING(const ParsedCommand &cmd)
 {

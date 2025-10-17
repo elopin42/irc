@@ -51,3 +51,31 @@ bool isValidUsername(const std::string &username)
 
     return true;
 }
+
+bool is_valid_channel_name(const std::string &name)
+{
+    if (name.empty() || name[0] != '#')
+        return false;
+    if (name.size() > 50)
+        return false;
+    for (size_t i = 1; i < name.size(); ++i)
+    {
+        if (name[i] == ' ' || name[i] == ',' || name[i] == 7)
+            return false;
+    }
+    return true;
+}
+
+std::vector<std::string> split(const std::string &s, char delimiter)
+{
+    std::vector<std::string> tokens;
+    std::stringstream ss(s);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter))
+    {
+        if (!token.empty())
+            tokens.push_back(token);
+    }
+    return tokens;
+}
