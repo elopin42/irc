@@ -306,39 +306,49 @@ void Server::USER(const ParsedCommand &cmd)
     std::cout << "[INFO] Client fd:" << client->fd << " nickname = " << client->nickname << std::endl;
 }
 
-//work
 void Server::QUIT(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
     if (!client)
         return;
 
-    std::string reason;
-    if (!cmd.args.empty())
-        reason = cmd.args[0];
-    else
-        reason = "Client quit";
+    std::string reason = cmd.args.empty() ? "Client quit" : cmd.args[0];
 
     std::ostringstream ss;
     ss << ":" << client->nickname << "!" << client->username
        << "@localhost QUIT :" << reason << "\r\n";
     std::string quit_msg = ss.str();
 
-    for (std::map<int, Client *>::iterator it = this->clients.begin();
-         it != this->clients.end(); ++it)
+    for (std::map<std::string, Channel *>::iterator it = this->channels.begin();
+         it != this->channels.end(); ++it)
     {
-        if (it->first == cmd.fd)
+        Channel *chan = it->second;
+
+        if (!chan)
             continue;
-        if (!it->second)
-            continue;
-        it->second->add_to_send_buf(quit_msg);
+
+        if (chan->is_user(client->nickname))
+        {
+            for (std::vector<std::string>::iterator u = chan->users.begin();
+                 u != chan->users.end(); ++u)
+            {
+                if (*u == client->nickname)
+                    continue;
+
+                int target_fd = this->resolve_user_fd(*u);
+                if (target_fd != -1)
+                    this->clients[target_fd]->add_to_send_buf(quit_msg);
+            }
+
+            chan->remove_user(client->nickname);
+        }
     }
 
-    std::cout << "[QUIT] " << client->nickname << " (" << client->fd << ") → " << reason << std::endl;
+    std::cout << "[QUIT] " << client->nickname
+              << " (" << client->fd << ") → " << reason << std::endl;
 
-    this->clients[cmd.fd]->kick = true;
+    client->kick = true;
 }
-
 
 void Server::try_register(Client *c)
 {
