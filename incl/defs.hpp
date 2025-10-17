@@ -28,6 +28,7 @@
 #define ERR_NOTEXTTOSEND     412  // No text to send
 #define ERR_UNKNOWNCOMMAND   421  // Unknown command
 #define ERR_NICKCOLLISION    436  // Nick collision
+#define ERR_NEEDMOREPARAMS   461  // Not enough parameters
 
 #define ERR_USERONCHANNEL 443
 
