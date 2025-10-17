@@ -306,13 +306,39 @@ void Server::USER(const ParsedCommand &cmd)
     std::cout << "[INFO] Client fd:" << client->fd << " nickname = " << client->nickname << std::endl;
 }
 
-//not fully
+//work
 void Server::QUIT(const ParsedCommand &cmd)
 {
-    //prevenir tout les channels duquel fesait parti le client avec cmd.args[0] si donne (regarder output format avec chatgpt)
     Client *client = this->clients[cmd.fd];
-    client->kick = true;
+    if (!client)
+        return;
+
+    std::string reason;
+    if (!cmd.args.empty())
+        reason = cmd.args[0];
+    else
+        reason = "Client quit";
+
+    std::ostringstream ss;
+    ss << ":" << client->nickname << "!" << client->username
+       << "@localhost QUIT :" << reason << "\r\n";
+    std::string quit_msg = ss.str();
+
+    for (std::map<int, Client *>::iterator it = this->clients.begin();
+         it != this->clients.end(); ++it)
+    {
+        if (it->first == cmd.fd)
+            continue;
+        if (!it->second)
+            continue;
+        it->second->add_to_send_buf(quit_msg);
+    }
+
+    std::cout << "[QUIT] " << client->nickname << " (" << client->fd << ") → " << reason << std::endl;
+
+    this->remove_client(cmd.fd);
 }
+
 
 void Server::try_register(Client *c)
 {
