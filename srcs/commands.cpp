@@ -336,7 +336,7 @@ void Server::QUIT(const ParsedCommand &cmd)
 
     std::cout << "[QUIT] " << client->nickname << " (" << client->fd << ") → " << reason << std::endl;
 
-    this->remove_client(cmd.fd);
+    this->clients[cmd.fd]->kick = true;
 }
 
 
