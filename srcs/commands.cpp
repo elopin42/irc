@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/17 15:53:10 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/18 21:07:28 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -319,7 +319,6 @@ void Server::QUIT(const ParsedCommand &cmd)
        << "@localhost QUIT :" << reason << "\r\n";
     std::string quit_msg = ss.str();
 
-    // Pour chaque autre client connecté
     for (std::map<int, Client *>::iterator it = this->clients.begin();
          it != this->clients.end(); ++it)
     {
@@ -329,7 +328,6 @@ void Server::QUIT(const ParsedCommand &cmd)
 
         bool shared_channel = false;
 
-        // Vérifie si les deux clients partagent au moins un channel
         for (std::map<std::string, Channel *>::iterator ch = this->channels.begin();
              ch != this->channels.end(); ++ch)
         {
@@ -360,7 +358,6 @@ void Server::QUIT(const ParsedCommand &cmd)
               << " (" << client->fd << ") → " << reason << std::endl;
 
     client->kick = true;
-    client->add_to_send_buf("\r\n");
 }
 
 void Server::try_register(Client *c)

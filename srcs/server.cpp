@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/16 21:36:53 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/18 20:59:43 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,6 +226,7 @@ void Server::epoll_loop()
                     this->handle_client_input(this->events[i].data.fd);
                 if (this->events[i].events & EPOLLOUT)
                     this->clients[this->events[i].data.fd]->send_pending();
+
             }
         }
     }
