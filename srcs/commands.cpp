@@ -319,35 +319,48 @@ void Server::QUIT(const ParsedCommand &cmd)
        << "@localhost QUIT :" << reason << "\r\n";
     std::string quit_msg = ss.str();
 
+    // Pour chaque autre client connecté
+    for (std::map<int, Client *>::iterator it = this->clients.begin();
+         it != this->clients.end(); ++it)
+    {
+        Client *other = it->second;
+        if (!other || other == client)
+            continue;
+
+        bool shared_channel = false;
+
+        // Vérifie si les deux clients partagent au moins un channel
+        for (std::map<std::string, Channel *>::iterator ch = this->channels.begin();
+             ch != this->channels.end(); ++ch)
+        {
+            Channel *chan = ch->second;
+            if (!chan)
+                continue;
+
+            if (chan->is_user(client->nickname) && chan->is_user(other->nickname))
+            {
+                shared_channel = true;
+                break;
+            }
+        }
+
+        if (shared_channel)
+            other->add_to_send_buf(quit_msg);
+    }
+
     for (std::map<std::string, Channel *>::iterator it = this->channels.begin();
          it != this->channels.end(); ++it)
     {
         Channel *chan = it->second;
-
-        if (!chan)
-            continue;
-
-        if (chan->is_user(client->nickname))
-        {
-            for (std::vector<std::string>::iterator u = chan->users.begin();
-                 u != chan->users.end(); ++u)
-            {
-                if (*u == client->nickname)
-                    continue;
-
-                int target_fd = this->resolve_user_fd(*u);
-                if (target_fd != -1)
-                    this->clients[target_fd]->add_to_send_buf(quit_msg);
-            }
-
+        if (chan && chan->is_user(client->nickname))
             chan->remove_user(client->nickname);
-        }
     }
 
     std::cout << "[QUIT] " << client->nickname
               << " (" << client->fd << ") → " << reason << std::endl;
 
     client->kick = true;
+    client->add_to_send_buf("\r\n");
 }
 
 void Server::try_register(Client *c)
