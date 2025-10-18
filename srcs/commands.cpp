@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/18 21:07:28 by elopin           ###   ########.fr       */
+/*   Updated: 2025/10/19 01:09:46 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,84 @@ void Server::CAP(const ParsedCommand &cmd)
     }
 }
 
+void Server::KICK(const ParsedCommand &cmd)
+{
+	Client *sender = this->clients[cmd.fd];
+	if (!sender)
+		return ;
+
+    if (cmd.args.size() < 2)
+    {
+        std::ostringstream err;
+        err << ":irc.local 461 " << sender->nickname << " KICK :Not enough parameters\r\n";
+        sender->add_to_send_buf(err.str());
+        return;
+    }
+
+    std::string channel_name = cmd.args[0];
+    std::string target_nick = cmd.args[1];
+    std::string reason = (cmd.args.size() > 2) ? cmd.args[2] : "Kicked";
+
+    if (this->channels.find(channel_name) == this->channels.end())
+    {
+        std::ostringstream err;
+        err << ":irc.local 403 " << sender->nickname << " " << channel_name << " :No such channel\r\n";
+        sender->add_to_send_buf(err.str());
+        return;
+    }
+	
+	Channel *chan = this->channels[channel_name];
+
+    if (!chan->is_user(sender->nickname))
+    {
+        std::ostringstream err;
+        err << ":irc.local 442 " << sender->nickname << " " << channel_name << " :You're not on that channel\r\n";
+        sender->add_to_send_buf(err.str());
+        return;
+    }
+
+    if (!chan->is_operator(sender->nickname))
+    {
+        std::ostringstream err;
+        err << ":irc.local 482 " << sender->nickname << " " << channel_name << " :You're not channel operator\r\n";
+        sender->add_to_send_buf(err.str());
+        return;
+    }
+
+    if (!chan->is_user(target_nick))
+    {
+        std::ostringstream err;
+        err << ":irc.local 441 " << sender->nickname << " " << target_nick << " " << channel_name << " :They aren't on that channel\r\n";
+        sender->add_to_send_buf(err.str());
+        return;
+    }
+
+    std::ostringstream ss;
+    ss << ":" << sender->nickname << "!" << sender->username
+       << "@localhost KICK " << channel_name << " "
+       << target_nick << " :" << reason << "\r\n";
+    std::string kick_msg = ss.str();
+
+    for (std::vector<std::string>::iterator it = chan->users.begin();
+         it != chan->users.end(); ++it)
+    {
+        int target_fd = this->resolve_user_fd(*it);
+        if (target_fd != -1)
+            this->clients[target_fd]->add_to_send_buf(kick_msg);
+    }
+
+    chan->remove_user(target_nick);
+
+    if (chan->is_operator(target_nick))
+        chan->remove_operator(target_nick);
+
+    std::cout << "[KICK] " << sender->nickname
+              << " kicked " << target_nick
+              << " from " << channel_name
+              << " (" << reason << ")" << std::endl;
+
+
+}
 //fully
 void Server::PASS(const ParsedCommand &cmd)
 {
