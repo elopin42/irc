@@ -14,6 +14,7 @@
 #define CHANNEL_HPP
 
 #include "defs.hpp"
+#include "../incl/server.hpp"
 
 class Channel {
 public:
@@ -22,6 +23,7 @@ public:
     std::vector<std::string> users; // nicknames of users in the channel
     std::vector<std::string> operators; // nicknames of operators
 
+    int limit_user;
     Channel(const std::string& name);
     ~Channel();
 
@@ -34,6 +36,7 @@ public:
     bool is_operator(const std::string& nickname) const;
     void add_operator(const std::string& nickname);
     void remove_operator(const std::string& nickname);
+    void broadcast_message(Server *server, const std::string &msg, const std::string &exclude_nick);
 };
 
 #endif

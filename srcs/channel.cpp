@@ -1,8 +1,24 @@
 #include "../incl/channel.hpp"
+#include "../incl/server.hpp"
+#include "../incl/client.hpp"
 
-Channel::Channel(const std::string& name) : name(name), topic("") {}
+Channel::Channel(const std::string& name) : name(name), topic("") , limit_user(-1){}
 
 Channel::~Channel() {}
+
+void Channel::broadcast_message(Server *server, const std::string &msg, const std::string &exclude_nick)
+{
+    for (size_t i = 0; i < users.size(); ++i)
+    {
+        if (!exclude_nick.empty() && users[i] == exclude_nick)
+            continue;
+
+        Client *u = server->find_client_by_nickname(users[i]);
+        if (u)
+            u->add_to_send_buf(msg);
+    }
+    (void) msg;
+}
 
 void Channel::add_user(const std::string& nickname) {
     if (std::find(users.begin(), users.end(), nickname) == users.end()) {
@@ -45,4 +61,3 @@ void Channel::remove_operator(const std::string& nickname) {
         operators.erase(it);
     }
 }
-

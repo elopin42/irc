@@ -135,10 +135,10 @@ void Server::JOIN(const ParsedCommand &cmd)
 
 		bool first_channel = false;
         if (this->channels.find(channel_name) == this->channels.end()) // does not exist yet
-		{																  
+		    {																  
             this->create_channel(channel_name);
-			first_channel = true;	
-		}
+			      first_channel = true;	
+		    }
 
         Channel *channel = this->channels[channel_name];
 
@@ -154,9 +154,17 @@ void Server::JOIN(const ParsedCommand &cmd)
             continue;
         }
 
+        if (channel->limit_user != -1 && channel->users.size() >= (size_t)channel->limit_user)
+        {
+          std::ostringstream ss;
+          ss << ":irc.local 471 " << client->nickname << " " << channel->name << " :Cannot join channel (+l)\r\n";
+          client->add_to_send_buf(ss.str());
+          return ;
+        }
+
         channel->add_user(client->nickname);
-		if (first_channel)
-			channel->add_operator(client->nickname);
+		    if (first_channel)
+			      channel->add_operator(client->nickname);
         std::cout << "[INFO] " << client->nickname << " joined " << channel_name << std::endl;\
 
         std::ostringstream join_msg;
@@ -198,6 +206,7 @@ void Server::PING(const ParsedCommand &cmd)
     }
 }
 
+//o et l de gerer mais a l'avenier on va refaire la fonction pour enlever ces gros message degueulasse car en gros c'est tout le tenmps le meme message que on reecris pour rien
 void Server::MODE(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
@@ -234,25 +243,40 @@ void Server::MODE(const ParsedCommand &cmd)
         {
             std::string nick = cmd.args[2];
             chan->add_operator(nick);
-            std::string msg = ":" + client->nickname + " MODE " + target + " +o " + nick + "\r\n";
-            for (size_t i = 0; i < chan->users.size(); ++i)
-            {
-                Client *u = find_client_by_nickname(chan->users[i]);
-                if (u)
-                    u->add_to_send_buf(msg);
-            }
+            std::ostringstream ss;
+            ss << ":" << client->nickname << " MODE " << target << " +o " << nick << "\r\n";
+            chan->broadcast_message(this, ss.str(), "");
         }
         else if (mode == "-o" && cmd.args.size() >= 3)
         {
             std::string nick = cmd.args[2];
             chan->remove_operator(nick);
-            std::string msg = ":" + client->nickname + " MODE " + target + " -o " + nick + "\r\n";
-            for (size_t i = 0; i < chan->users.size(); ++i)
+            std::ostringstream ss;
+            ss << ":" << client->nickname << " MODE " << target << " -o " << nick << "\r\n";
+            chan->broadcast_message(this, ss.str(), "");
+        }
+        else if (mode == "+l")
+        {
+            if (cmd.args.size() < 3)
             {
-                Client *u = find_client_by_nickname(chan->users[i]);
-                if (u)
-                    u->add_to_send_buf(msg);
+                std::ostringstream ss;
+                ss << ":irc.local 461 " << client->nickname << " MODE :Not enough parameters\r\n";
+                client->add_to_send_buf(ss.str());
             }
+            else
+            {
+                chan->limit_user = std::atoi(cmd.args[2].c_str());
+                std::ostringstream ss;
+                ss << ":" << client->nickname << " MODE " << chan->name << " +l " << cmd.args[2] << "\r\n";
+                chan->broadcast_message(this, ss.str(), "");
+            }
+        }
+        else if (mode == "-l")
+        {
+            chan->limit_user = -1;
+            std::ostringstream ss;
+            ss << ":" << client->nickname << " MODE " << chan->name << " -l\r\n";
+            chan->broadcast_message(this, ss.str(), "");
         }
         else
         {
