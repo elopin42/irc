@@ -14,6 +14,16 @@
 #include "../incl/client.hpp"
 #include "../incl/channel.hpp"
 
+Client *Server::find_client_by_nickname(const std::string &nickname)
+{
+    for (std::map<int, Client*>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
+    {
+        if (it->second->nickname == nickname)
+            return it->second;
+    }
+    return NULL;
+}
+
 int Server::resolve_user_fd(const std::string &user)
 {
     std::map<int, Client*>::iterator it;

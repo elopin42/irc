@@ -82,6 +82,7 @@ public:
     void TOPIC(const ParsedCommand &cmd);//2 usages: TOPIC <channel>, you have to just send the topic to the user, TOPIC <channel> :text here you have to change the topic of the channel and broadcast the new one to users
     void MODE(const ParsedCommand &cmd); //changes some things about the channel you are in, everything is described in the subject some or all may require being operator of the channel
     void INVITE(const ParsedCommand &cmd);//invites someone to the channel, sends a notification to the invited client, the client can then use join, (add a vector in the channel class that will work as an
+    Client *find_client_by_nickname(const std::string &nickname);
     //invite list, when a user invites someone that person is added to the list, and when the user in question joins, you remove his name from the invite list, beware of the fact that the channel may not
     //be always invite only, so even check the invite list only if needed if not needed still remove the name from the invite list as the channel may go invite only later)
     
