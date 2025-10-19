@@ -192,6 +192,75 @@ void Server::PING(const ParsedCommand &cmd)
     }
 }
 
+void Server::MODE(const ParsedCommand &cmd)
+{
+    Client *client = this->clients[cmd.fd];
+
+    if (cmd.args.size() < 2)
+    {
+        std::string err = ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+
+    std::string target = cmd.args[0];
+    std::string mode = cmd.args[1];
+
+    if (target[0] == '#')
+    {
+        if (this->channels.find(target) == this->channels.end())
+        {
+            std::string err = ":irc.local 403 " + client->nickname + " " + target + " :No such channel\r\n";
+            client->add_to_send_buf(err);
+            return;
+        }
+
+        Channel &chan = this->channels[target];
+
+        if (!chan.is_operator(client->nickname))
+        {
+            std::string err = ":irc.local 482 " + client->nickname + " " + target + " :You're not channel operator\r\n";
+            client->add_to_send_buf(err);
+            return;
+        }
+
+        if (mode == "+o" && cmd.args.size() >= 3)
+        {
+            std::string nick = cmd.args[2];
+            chan.add_operator(nick);
+            std::string msg = ":" + client->nickname + " MODE " + target + " +o " + nick + "\r\n";
+            for (size_t i = 0; i < chan.users.size(); ++i)
+            {
+                Client *u = find_client_by_nickname(chan.users[i]);
+                if (u)
+                    u->add_to_send_buf(msg);
+            }
+        }
+        else if (mode == "-o" && cmd.args.size() >= 3)
+        {
+            std::string nick = cmd.args[2];
+            chan.remove_operator(nick);
+            std::string msg = ":" + client->nickname + " MODE " + target + " -o " + nick + "\r\n";
+            for (size_t i = 0; i < chan.users.size(); ++i)
+            {
+                Client *u = find_client_by_nickname(chan.users[i]);
+                if (u)
+                    u->add_to_send_buf(msg);
+            }
+        }
+        else
+        {
+            std::string err = ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n";
+            client->add_to_send_buf(err);
+        }
+    }
+    else
+    {
+        std::string err = ":irc.local 502 " + client->nickname + " :Cannot change mode for other users\r\n";
+        client->add_to_send_buf(err);
+    }
+}
+
 // fully
 void Server::PONG(const ParsedCommand &cmd)
 {
@@ -292,6 +361,82 @@ void Server::KICK(const ParsedCommand &cmd)
 
 
 }
+
+void Server::MODE(const ParsedCommand &cmd)
+{
+    Client *client = this->clients[cmd.fd];
+
+    // Vérifie arguments
+    if (cmd.args.size() < 2)
+    {
+        std::string err = ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n";
+        client->add_to_send_buf(err);
+        return;
+    }
+
+    std::string target = cmd.args[0];
+    std::string mode = cmd.args[1];
+
+    // --- MODE sur un channel ---
+    if (target[0] == '#')
+    {
+        if (this->channels.find(target) == this->channels.end())
+        {
+            std::string err = ":irc.local 403 " + client->nickname + " " + target + " :No such channel\r\n";
+            client->add_to_send_buf(err);
+            return;
+        }
+
+        Channel &chan = this->channels[target];
+
+        // Seuls les opérateurs peuvent changer les modes
+        if (!chan.is_operator(client->nickname))
+        {
+            std::string err = ":irc.local 482 " + client->nickname + " " + target + " :You're not channel operator\r\n";
+            client->add_to_send_buf(err);
+            return;
+        }
+
+        // Gérer le mode
+        if (mode == "+o" && cmd.args.size() >= 3)
+        {
+            std::string nick = cmd.args[2];
+            chan.add_operator(nick);
+            std::string msg = ":" + client->nickname + " MODE " + target + " +o " + nick + "\r\n";
+            // broadcast à tous les users du channel
+            for (size_t i = 0; i < chan.users.size(); ++i)
+            {
+                Client *u = find_client_by_nickname(chan.users[i]);
+                if (u)
+                    u->add_to_send_buf(msg);
+            }
+        }
+        else if (mode == "-o" && cmd.args.size() >= 3)
+        {
+            std::string nick = cmd.args[2];
+            chan.remove_operator(nick);
+            std::string msg = ":" + client->nickname + " MODE " + target + " -o " + nick + "\r\n";
+            for (size_t i = 0; i < chan.users.size(); ++i)
+            {
+                Client *u = find_client_by_nickname(chan.users[i]);
+                if (u)
+                    u->add_to_send_buf(msg);
+            }
+        }
+        else
+        {
+            std::string err = ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n";
+            client->add_to_send_buf(err);
+        }
+    }
+    else
+    {
+        // MODE sur un user (souvent non implémenté dans ft_irc)
+        std::string err = ":irc.local 502 " + client->nickname + " :Cannot change mode for other users\r\n";
+        client->add_to_send_buf(err);
+    }
+}
+
 //fully
 void Server::PASS(const ParsedCommand &cmd)
 {
