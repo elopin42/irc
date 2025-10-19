@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/19 01:14:22 by elopin           ###   ########.fr       */
+/*   Updated: 2025/10/19 23:11:48 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void Server::initialize_command_map()
     // this->command_map["NOTICE"] = &Server::NOTICE;
     // this->command_map["PART"] = &Server::PART;
     // this->command_map["TOPIC"] = &Server::TOPIC;
-    // this->command_map["MODE"] = &Server::MODE;
+    this->command_map["MODE"] = &Server::MODE;
     // this->command_map["INVITE"] = &Server::INVITE;
     this->command_map["KICK"] = &Server::KICK;
     // this->command_map["WHO"] = &Server::WHO;

@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/19 01:09:46 by elopin           ###   ########.fr       */
+/*   Updated: 2025/10/19 23:38:35 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,9 +133,13 @@ void Server::JOIN(const ParsedCommand &cmd)
             continue;
         }
 
+		bool first_channel = false;
         if (this->channels.find(channel_name) == this->channels.end()) // does not exist yet
+		{																  
             this->create_channel(channel_name);
-        
+			first_channel = true;	
+		}
+
         Channel *channel = this->channels[channel_name];
 
         if (channel->is_user(client->nickname))
@@ -151,6 +155,8 @@ void Server::JOIN(const ParsedCommand &cmd)
         }
 
         channel->add_user(client->nickname);
+		if (first_channel)
+			channel->add_operator(client->nickname);
         std::cout << "[INFO] " << client->nickname << " joined " << channel_name << std::endl;\
 
         std::ostringstream join_msg;
