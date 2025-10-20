@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/15 19:26:56 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/20 17:27:40 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/20 19:27:25 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
     Client *client = this->clients[cmd.fd];
 
     if (cmd.args.size() < 2)
-        return this->send_to(client->fd, ":irc.local 411 " + this->clients[cmd.fd]->nickname + " :No recipient given (PRIVMSG)\r\n");
+        return this->send_to(client->fd, ":irc.local 411 " + client->nickname + " :No recipient given (PRIVMSG)\r\n");
     if (cmd.args[1].empty())
-        return this->send_to(client->fd, ":irc.local 412 " + this->clients[cmd.fd]->nickname + " :No text to send\r\n");
+        return this->send_to(client->fd, ":irc.local 412 " + client->nickname + " :No text to send\r\n");
 
     std::string recipient = cmd.args[0];
     std::string message = cmd.args[1];
@@ -30,10 +30,10 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
     if (recipient[0] == '#')
     {
         if (this->channels.find(recipient) == this->channels.end())
-            return this->send_to(client->fd, ":irc.local 403 " + this->clients[cmd.fd]->nickname + ' ' + recipient + " :No such channel\r\n");
+            return this->send_to(client->fd, ":irc.local 403 " + client->nickname + ' ' + recipient + " :No such channel\r\n");
 
-        if (!this->channels[recipient]->is_user(this->clients[cmd.fd]->nickname))
-            return this->send_to(client->fd, ":irc.local 404 " + this->clients[cmd.fd]->nickname + ' ' + recipient + " :Cannot send to channel\r\n");
+        if (!this->channels[recipient]->is_user(client->nickname))
+            return this->send_to(client->fd, ":irc.local 404 " + client->nickname + ' ' + recipient + " :Cannot send to channel\r\n");
 
         for (std::vector<std::string>::iterator it = this->channels[recipient]->users.begin();
              it != this->channels[recipient]->users.end(); ++it)
@@ -42,7 +42,7 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
             {
                 int target_fd = this->resolve_user_fd(*it);
                 if (target_fd != -1)
-                    this->send_to(target_fd, ":" + this->clients[cmd.fd]->nickname + "!" + this->clients[cmd.fd]->username + "@localhost PRIVMSG " + recipient + " :" + message + "\r\n");
+                    this->send_to(target_fd, ":" + client->nickname + "!" + client->username + "@localhost PRIVMSG " + recipient + " :" + message + "\r\n");
             }
         }
     }
@@ -50,29 +50,47 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
     {
         int target_fd = this->resolve_user_fd(recipient);
         if (target_fd == -1)
-            return this->send_to(client->fd, ":irc.local 401 " + this->clients[cmd.fd]->nickname + ' ' + recipient + " :No such nick/channel\r\n");
+            return this->send_to(client->fd, ":irc.local 401 " + client->nickname + ' ' + recipient + " :No such nick/channel\r\n");
         else
-            this->send_to(target_fd, ":" + this->clients[cmd.fd]->nickname + "!" + this->clients[cmd.fd]->username + "@localhost PRIVMSG " + recipient + " :" + message + "\r\n");
+            this->send_to(target_fd, ":" + client->nickname + "!" + client->username + "@localhost PRIVMSG " + recipient + " :" + message + "\r\n");
     }
 }
 
 // not fully
-// :irc.example.com 461 <nick> JOIN :Invalid syntax – do not use spaces in channel list
-// dans le cas d'espace au mauvais endroit
 void Server::JOIN(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
 
-    if (!this->clients[cmd.fd]->registered)
+    if (!client->registered)
         return;
     if (cmd.args.empty())
         return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " JOIN :Not enough parameters\r\n");
 
-    std::vector<std::string> channels = split(cmd.args[0], ',');
+    // Consolidate multiple args into channel and key lists (handles spaces around commas)
+    std::string channel_arg = cmd.args[0];
+    std::string key_arg = "";
+    
+    // If there are extra args and they look like channel continuations, concatenate them
+    for (size_t i = 1; i < cmd.args.size(); ++i)
+    {
+        if (cmd.args[i][0] == '#')
+        {
+            channel_arg += "," + cmd.args[i];
+        }
+        else if (!cmd.args[i].empty())
+        {
+            if (key_arg.empty())
+                key_arg = cmd.args[i];
+            else
+                key_arg += "," + cmd.args[i];
+        }
+    }
+
+    std::vector<std::string> channels = split(channel_arg, ',');
     std::vector<std::string> keys;
 
-    if (cmd.args.size() > 1)
-        keys = split(cmd.args[1], ',');
+    if (!key_arg.empty())
+        keys = split(key_arg, ',');
 
     for (size_t i = 0; i < channels.size(); ++i)
     {
@@ -94,6 +112,12 @@ void Server::JOIN(const ParsedCommand &cmd)
 
         Channel *channel = this->channels[channel_name];
 
+        if (!channel->key.empty() && key != channel->key)
+        {
+            this->send_to(client->fd, ":irc.local 475 " + client->nickname + ' ' + channel_name + " :Cannot join channel (+k)\r\n");
+            continue;
+        }
+
         if (channel->is_user(client->nickname))
         {
             std::cout << "[WARN] client " << client->nickname << " is already on channel " << channel_name << std::endl;
@@ -102,11 +126,26 @@ void Server::JOIN(const ParsedCommand &cmd)
         }
 
         if (channel->limit_user != -1 && channel->users.size() >= (size_t)channel->limit_user)
-            return this->send_to(client->fd, ":irc.local 471 " + client->nickname + ' ' + channel->name + " :Cannot join channel (+l)\r\n");
+        {
+            this->send_to(client->fd, ":irc.local 471 " + client->nickname + ' ' + channel->name + " :Cannot join channel (+l)\r\n");
+            continue;
+        }
 
         channel->add_user(client->nickname);
 
-        this->send_to(client->fd, ":" + client->nickname + "!" + client->username + "@localhost JOIN " + channel_name + "\r\n");
+        std::string join_msg = ":" + client->nickname + "!" + client->username + "@localhost JOIN " + channel_name + "\r\n";
+        this->send_to(client->fd, join_msg);
+        
+        // Broadcast JOIN to all other channel members
+        for (size_t j = 0; j < channel->users.size(); ++j)
+        {
+            if (channel->users[j] != client->nickname)
+            {
+                int member_fd = this->resolve_user_fd(channel->users[j]);
+                if (member_fd != -1)
+                    this->send_to(member_fd, join_msg);
+            }
+        }
 
         if (first_channel)
             channel->add_operator(*client, client->nickname);
@@ -182,6 +221,21 @@ void Server::MODE(const ParsedCommand &cmd)
         {
             chan->limit_user = -1;
             chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -l\r\n", "");
+        }
+        else if (mode == "+k")
+        {
+            if (cmd.args.size() < 3)
+                return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n");
+            else
+            {
+                chan->key = cmd.args[2];
+                chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +k " + cmd.args[2] + "\r\n", "");
+            }
+        }
+        else if (mode == "-k")
+        {
+            chan->key = "";
+            chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -k\r\n", "");
         }
         else
             return this->send_to(client->fd, ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n");

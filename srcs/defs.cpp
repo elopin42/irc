@@ -74,6 +74,20 @@ std::vector<std::string> split(const std::string &s, char delimiter)
 
     while (std::getline(ss, token, delimiter))
     {
+        // Trim leading whitespace
+        size_t start = token.find_first_not_of(" \t\r\n");
+        if (start != std::string::npos)
+            token = token.substr(start);
+        else
+            token = "";
+        
+        // Trim trailing whitespace
+        if (!token.empty())
+        {
+            size_t end = token.find_last_not_of(" \t\r\n");
+            token = token.substr(0, end + 1);
+        }
+        
         if (!token.empty())
             tokens.push_back(token);
     }

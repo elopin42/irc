@@ -22,6 +22,7 @@ public:
 
     std::string name;
     std::string topic;
+    std::string key;
     std::vector<std::string> users; // nicknames of users in the channel
     std::vector<std::string> operators; // nicknames of operators
 

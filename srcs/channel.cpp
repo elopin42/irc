@@ -2,7 +2,7 @@
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
-Channel::Channel(const std::string &name, Server *serv) : serv(serv), name(name), topic(""), limit_user(-1) {}
+Channel::Channel(const std::string &name, Server *serv) : serv(serv), name(name), topic(""), key(""), limit_user(-1) {}
 
 Channel::~Channel() {}
 

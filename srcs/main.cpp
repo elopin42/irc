@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:31 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/14 13:46:52 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/20 19:42:32 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ int main(int ac, char **av)
   catch(const std::exception& e)
   {
     std::cerr << e.what() << '\n';
+    //Liberer Lacrim, et la map des channels et des clients ca peut arriver en cas de fail a un system call (souvent ce connard de recv de merde)
     return 1;
   }
 }
