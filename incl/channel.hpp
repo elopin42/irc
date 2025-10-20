@@ -25,8 +25,12 @@ public:
     std::string key;
     std::vector<std::string> users; // nicknames of users in the channel
     std::vector<std::string> operators; // nicknames of operators
+    std::vector<std::string> invited_users;
 
+    bool invite_only;
     int limit_user;
+    bool topic_restricted;
+
     Channel(const std::string& name, Server *serv);
     ~Channel();
 
@@ -40,6 +44,9 @@ public:
     void add_operator(const Client& setter, const std::string& nickname);
     void remove_operator(const std::string& nickname);
     void broadcast_message(const std::string &msg, const std::string &exclude_nick);
+    void add_invited(const std::string &nickname);
+    bool is_invited(const std::string &nickname) const;
+    void remove_invited(const std::string &nickname);
 };
 
 #endif

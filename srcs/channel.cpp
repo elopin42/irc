@@ -2,7 +2,7 @@
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
-Channel::Channel(const std::string &name, Server *serv) : serv(serv), name(name), topic(""), key(""), limit_user(-1) {}
+Channel::Channel(const std::string &name, Server *serv) : serv(serv), name(name), topic(""), key(""), invite_only(false), limit_user(-1), topic_restricted(false) {}
 
 Channel::~Channel() {}
 
@@ -74,4 +74,22 @@ void Channel::remove_operator(const std::string &nickname)
     {
         operators.erase(it);
     }
+}
+
+void Channel::add_invited(const std::string &nickname)
+{
+    if (std::find(invited_users.begin(), invited_users.end(), nickname) == invited_users.end())
+        invited_users.push_back(nickname);
+}
+
+bool Channel::is_invited(const std::string &nickname) const
+{
+    return std::find(invited_users.begin(), invited_users.end(), nickname) != invited_users.end();
+}
+
+void Channel::remove_invited(const std::string &nickname)
+{
+    std::vector<std::string>::iterator it = std::find(invited_users.begin(), invited_users.end(), nickname);
+    if (it != invited_users.end())
+        invited_users.erase(it);
 }
