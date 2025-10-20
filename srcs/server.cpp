@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/19 23:11:48 by elopin           ###   ########.fr       */
+/*   Updated: 2025/10/20 17:27:24 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,11 @@ Client *Server::find_client_by_nickname(const std::string &nickname)
     return NULL;
 }
 
+void Server::send_to(int fd, std::string to_send)
+{
+    this->clients[fd]->add_to_send_buf(to_send);
+}
+
 int Server::resolve_user_fd(const std::string &user)
 {
     std::map<int, Client*>::iterator it;
@@ -37,8 +42,8 @@ int Server::resolve_user_fd(const std::string &user)
 
 void Server::create_channel(const std::string &name)
 {
-    this->channels[name] = new Channel(name);
-    std::cout << "[DEBUG] created channel " << name << std::endl;
+    this->channels[name] = new Channel(name, this);
+    std::cout << "[INFO] created channel " << name << std::endl;
 }
 
 void Server::initialize_handled_commands()
@@ -78,8 +83,9 @@ void Server::execute_command(const ParsedCommand &cmd)
     }
 
     // Command is handled but not implemented yet
+    std::cout << "[DEBUG] Command not recognized " << cmd.cmd << std::endl;
     std::string err = "421 " + cmd.cmd + " :Command not implemented\r\n";
-    send(cmd.fd, err.c_str(), err.size(), 0);
+    this->clients[cmd.fd]->add_to_send_buf(err);
 }
 
 void Server::initialize_command_map()

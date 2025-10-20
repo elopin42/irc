@@ -45,7 +45,6 @@ void Client::parse_lines()
 {
     while (!this->lines_to_parse.empty())
     {
-        std::cout << "[DEBUG] line to parse is: '" << this->lines_to_parse[0];
         std::string line = this->lines_to_parse.front();
         this->lines_to_parse.erase(this->lines_to_parse.begin());
 

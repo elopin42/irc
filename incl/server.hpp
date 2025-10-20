@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/16 16:10:25 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/20 17:01:53 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ public:
     void accept_new_client();
     void handle_client_input(int fd);
     void remove_client(int fd);
+    void send_to(int fd, std::string to_send);
 
     int resolve_user_fd(const std::string &user);
 
