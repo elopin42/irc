@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 14:33:51 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/20 18:12:19 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/21 15:03:54 by ckarsent         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ public:
     //Please ask chatgpt for how to format your message for every different situation for irssi to handle it correctly         //
     //AND NEVER USE SEND DIRECTLY, ONLY USE ADD_TO_SEND_BUFFER AS THE CLIENT                                                   //
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!//
-    
+
     // Connection / registration
     void PASS(const ParsedCommand &cmd); //sets the pass of the client
     void NICK(const ParsedCommand &cmd); //sets the nick of the client
@@ -86,7 +86,7 @@ public:
     Client *find_client_by_nickname(const std::string &nickname);
     //invite list, when a user invites someone that person is added to the list, and when the user in question joins, you remove his name from the invite list, beware of the fact that the channel may not
     //be always invite only, so even check the invite list only if needed if not needed still remove the name from the invite list as the channel may go invite only later)
-    
+
     void KICK(const ParsedCommand &cmd);//kicks a user from the channel, not the server
 
     void WHO(const ParsedCommand &cmd);   // Optional: list users in a channel
