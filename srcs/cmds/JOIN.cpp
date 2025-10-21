@@ -74,6 +74,8 @@ void Server::JOIN(const ParsedCommand &cmd)
             this->send_to(client->fd, ":irc.local 473" + client->nickname + " " + channel_name + ":Cannot join channel (+i)\r\n");
             continue;
         }
+        if (channel->invite_only)
+          remove_invited(client->nickname);
 
         if (!channel->key.empty() && key != channel->key)
         {
@@ -113,6 +115,16 @@ void Server::JOIN(const ParsedCommand &cmd)
         if (first_channel)
             channel->add_operator(*client, client->nickname);
         std::cout << "[INFO] " << client->nickname << " joined " << channel_name << std::endl;
+
+        if (chan->topic.empty()) {
+            std::ostringstream ss;
+            ss << ":irc.local 331 " << client->nickname << " " << channel_name << " :No topic is set\r\n";
+            client->add_to_send_buf(ss.str());
+        } else {
+            std::ostringstream ss;
+            ss << ":irc.local 332 " << client->nickname << " " << channel_name << " :" << chan->topic << "\r\n";
+            client->add_to_send_buf(ss.str());
+        }
 
         std::string names_msg = ":irc.local 353 " + client->nickname + " = " + channel_name + " :";
         for (size_t j = 0; j < channel->users.size(); ++j)

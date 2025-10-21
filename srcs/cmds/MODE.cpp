@@ -84,6 +84,7 @@ void Server::MODE(const ParsedCommand &cmd)
         else if (mode == "-i")
         {
           chan->invite_only = false;
+          chan->invited_users.clear();
           chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +i\r\n", "");
         }
         else if (mode == "+t")

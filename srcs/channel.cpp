@@ -93,3 +93,8 @@ void Channel::remove_invited(const std::string &nickname)
     if (it != invited_users.end())
         invited_users.erase(it);
 }
+
+void Channel::set_topic(const std::string& new_topic)
+{
+    this->topic = new_topic;
+}
