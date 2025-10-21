@@ -12,6 +12,7 @@
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
+#include "../incl/channel.hpp"
 
 void Server::TOPIC(const ParsedCommand &cmd)
 {

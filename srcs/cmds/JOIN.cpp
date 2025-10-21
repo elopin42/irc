@@ -75,7 +75,7 @@ void Server::JOIN(const ParsedCommand &cmd)
             continue;
         }
         if (channel->invite_only)
-          remove_invited(client->nickname);
+          channel->remove_invited(client->nickname);
 
         if (!channel->key.empty() && key != channel->key)
         {
@@ -116,13 +116,13 @@ void Server::JOIN(const ParsedCommand &cmd)
             channel->add_operator(*client, client->nickname);
         std::cout << "[INFO] " << client->nickname << " joined " << channel_name << std::endl;
 
-        if (chan->topic.empty()) {
+        if (channel->topic.empty()) {
             std::ostringstream ss;
             ss << ":irc.local 331 " << client->nickname << " " << channel_name << " :No topic is set\r\n";
             client->add_to_send_buf(ss.str());
         } else {
             std::ostringstream ss;
-            ss << ":irc.local 332 " << client->nickname << " " << channel_name << " :" << chan->topic << "\r\n";
+            ss << ":irc.local 332 " << client->nickname << " " << channel_name << " :" << channel->topic << "\r\n";
             client->add_to_send_buf(ss.str());
         }
 
