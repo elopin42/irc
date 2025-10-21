@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   WHOIS.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:55:04 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 15:00:43 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/21 22:50:04 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
-void Server::WHOIS(const ParsedCommand &cmd) {}
+// void Server::WHOIS(const ParsedCommand &cmd) {}

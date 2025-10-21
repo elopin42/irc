@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   QUIT.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:47:33 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 14:47:51 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/21 22:46:48 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
+#include "../incl/channel.hpp"
 
 void Server::QUIT(const ParsedCommand &cmd)
 {

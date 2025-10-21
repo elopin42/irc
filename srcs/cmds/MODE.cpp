@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   MODE.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:51:17 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 14:51:22 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/21 22:46:25 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
+#include "../incl/channel.hpp"
 
 // o et l de gerer mais a l'avenier on va refaire la fonction pour enlever ces gros message degueulasse car en gros c'est tout le tenmps le meme message que on reecris pour rien
 void Server::MODE(const ParsedCommand &cmd)

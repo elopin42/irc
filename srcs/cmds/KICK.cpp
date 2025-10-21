@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   KICK.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:49:35 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 14:49:40 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/21 22:46:19 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
+#include "../incl/channel.hpp"
 
 void Server::KICK(const ParsedCommand &cmd)
 {

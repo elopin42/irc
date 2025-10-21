@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   WHO.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:54:56 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 15:00:31 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/21 22:50:00 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 
-void Server::WHO(const ParsedCommand &cmd) {}
+// void Server::WHO(const ParsedCommand &cmd) {}
 
