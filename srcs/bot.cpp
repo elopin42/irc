@@ -37,7 +37,7 @@ void Channel::bot_message(const std::string &msg) {
         responses["pid"] = "zombie";
         responses["child"] = "abandonne";
         responses["thread"] = "invisible";
-        responses["mutex"] = "verrouillé pour toujours";
+        responses["mutex"] = "verrouille pour toujours";
         responses["sleep"] = "jamais";
         responses["coffee"] = "vide";
         responses["core"] = "dumped";
@@ -45,13 +45,16 @@ void Channel::bot_message(const std::string &msg) {
         responses["void"] = "comme toi";
         responses["tu fais quoi"] = "je code xd";
         responses["tu as manger"] = "oui bg";
-        responses["tu va bien"] = "trkl";
-        responses["yo"] = "yo";
+        responses["tu vas bien"] = "trkl";
+        responses["yo"] = "yoooooo";
         responses["hola"] = "holaaaaaa";
-        responses["ya qui"] = "moi";
-        responses["il y a qui"] = "moi eft";
+        responses["y'a qui"] = "moi";
+        responses["il y a qui"] = "moi enft";
         responses["bar"] = "j'y suis deja";
         responses["42"] = "the schooooooooolll";
+        responses["bisous"] = "ma viiiiiiie";
+        responses["il est ou ethan ?"] = "au bar";
+        responses["il est ou yann ?"] = "au lidl avec jules";
 	}
 
     std::istringstream iss(msg);
