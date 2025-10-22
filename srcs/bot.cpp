@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 14:51:06 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/22 20:38:50 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 21:10:29 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,15 @@ void Channel::bot_message(const std::string &msg) {
         responses["core"] = "dumped";
         responses["return"] = "rien";
         responses["void"] = "comme toi";
+        responses["tu fais quoi"] = "je code xd";
+        responses["tu as manger"] = "oui bg";
+        responses["tu va bien"] = "trkl";
+        responses["yo"] = "yo";
+        responses["hola"] = "holaaaaaa";
+        responses["ya qui"] = "moi";
+        responses["il y a qui"] = "moi eft";
+        responses["bar"] = "j'y suis deja";
+        responses["42"] = "the schooooooooolll";
 	}
 
     std::istringstream iss(msg);
