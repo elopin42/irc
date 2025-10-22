@@ -38,67 +38,49 @@ void Server::MODE(const ParsedCommand &cmd)
         if (mode == "+o" && cmd.args.size() >= 3)
         {
             std::string nick = cmd.args[2];
-            chan->add_operator(*client, nick);
+            return chan->add_operator(*client, nick);
         }
         else if (mode == "-o" && cmd.args.size() >= 3)
         {
             std::string nick = cmd.args[2];
             chan->remove_operator(nick);
-            chan->broadcast_message(":" + client->nickname + " MODE " + target + " -o " + nick + "\r\n", "");
+            return chan->broadcast_message(":" + client->nickname + " MODE " + target + " -o " + nick + "\r\n", "");
         }
         else if (mode == "+l")
         {
             if (cmd.args.size() < 3)
                 return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n");
             else
-            {
                 chan->limit_user = std::atoi(cmd.args[2].c_str());
-                chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +l " + cmd.args[2] + "\r\n", "");
-            }
         }
         else if (mode == "-l")
-        {
             chan->limit_user = -1;
-            chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -l\r\n", "");
-        }
         else if (mode == "+k")
         {
             if (cmd.args.size() < 3)
                 return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n");
             else
-            {
                 chan->key = cmd.args[2];
-                chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +k " + cmd.args[2] + "\r\n", "");
-            }
         }
         else if (mode == "-k")
-        {
             chan->key = "";
-            chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -k\r\n", "");
-        }
         else if (mode == "+i")
-        {
           chan->invite_only = true;
-          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +i\r\n", "");
-        }
         else if (mode == "-i")
         {
           chan->invite_only = false;
           chan->invited_users.clear();
-          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -i\r\n", "");
         }
         else if (mode == "+t")
-        {
             chan->topic_restricted = true;
-            chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " +t\r\n", "");
-        }
         else if (mode == "-t")
-        {
             chan->topic_restricted = false;
-            chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " -t\r\n", "");
-        }
         else
             return this->send_to(client->fd, ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n");
+        if (mode == "+k" || mode == "+l")
+          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
+        else
+          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " " + mode + " \r\n", "");
     }
     else
         return this->send_to(client->fd, ":irc.local 502 " + client->nickname + " :Cannot change mode for other users\r\n");
