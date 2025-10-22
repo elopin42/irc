@@ -17,6 +17,8 @@
 #include "../incl/server.hpp"
 
 class Channel {
+// private:
+//     std::map<std::string, std::string> bot_responses;
 public:
     Server *serv;
 
@@ -41,7 +43,7 @@ public:
     bool is_user(const std::string &nickname);
 
     void set_topic(const std::string& new_topic);
-    void bot_message(std::string msg);
+    void bot_message(const std::string& msg);
     bool is_operator(const std::string& nickname) const;
     void add_operator(const Client& setter, const std::string& nickname);
     void remove_operator(const std::string& nickname);

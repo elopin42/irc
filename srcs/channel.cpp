@@ -6,15 +6,6 @@ Channel::Channel(const std::string &name, Server *serv) : serv(serv), name(name)
 
 Channel::~Channel() {}
 
-void Channel::bot_message(std::string msg) {
-  std::string return_msg;
-  if (msg == "tu fais quoi") 
-    return_msg = "ftg fdp";
-  else
-    return;
-  broadcast_message(":BOT!BOT@localhost PRIVMSG " + name + " :" + return_msg + "\r\n", "");
-}
-
 void Channel::broadcast_message(const std::string &msg, const std::string &exclude_nick)
 {
     for (size_t i = 0; i < users.size(); ++i)
