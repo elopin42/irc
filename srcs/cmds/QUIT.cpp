@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:47:33 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:46:48 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,39 +24,37 @@ void Server::QUIT(const ParsedCommand &cmd)
 
     std::string quit_msg = ":" + client->nickname + "!" + client->username + "@localhost QUIT :" + reason + "\r\n";
 
-    for (std::map<int, Client *>::iterator it = this->clients.begin();
-         it != this->clients.end(); ++it)
+    // Notify all clients in shared channels (more efficient using joined_channels)
+    std::set<std::string> notified_channels;
+    for (size_t i = 0; i < client->joined_channels.size(); ++i)
     {
-        Client *other = it->second;
-        if (!other || other == client)
-            continue;
-
-        bool shared_channel = false;
-
-        for (std::map<std::string, Channel *>::iterator ch = this->channels.begin();
-             ch != this->channels.end(); ++ch)
+        Channel *chan = this->channels[client->joined_channels[i]];
+        if (chan)
         {
-            Channel *chan = ch->second;
-            if (!chan)
-                continue;
-
-            if (chan->is_user(client->nickname) && chan->is_user(other->nickname))
+            for (size_t j = 0; j < chan->users.size(); ++j)
             {
-                shared_channel = true;
-                break;
+                if (chan->users[j] != client->nickname)
+                {
+                    int user_fd = this->resolve_user_fd(chan->users[j]);
+                    if (user_fd != -1)
+                        this->send_to(user_fd, quit_msg);
+                }
             }
         }
-
-        if (shared_channel)
-            this->send_to(other->fd, quit_msg);
     }
 
-    for (std::map<std::string, Channel *>::iterator it = this->channels.begin();
-         it != this->channels.end(); ++it)
+    // Remove client from all channels
+    for (size_t i = 0; i < client->joined_channels.size(); ++i)
     {
-        Channel *chan = it->second;
-        if (chan && chan->is_user(client->nickname))
+        Channel *chan = this->channels[client->joined_channels[i]];
+        if (chan)
+        {
             chan->remove_user(client->nickname);
+            if (chan->is_operator(client->nickname))
+                chan->remove_operator(client->nickname);
+            if (chan->users.empty())
+                this->remove_channel(chan->name);
+        }
     }
 
     std::cout << "[QUIT] " << client->nickname

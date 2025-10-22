@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   USER.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <ckarsent@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:48:25 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 14:48:35 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:38 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void Server::USER(const ParsedCommand &cmd)
         return this->send_to(client->fd, ":irc.local 468 * " + client->nickname + " :Invalid username\r\n");
 
     client->username = cmd.args[0];
+    client->realname = cmd.args[3];
     client->user_ok = true;
     if (!client->first_try)
         this->try_register(client);

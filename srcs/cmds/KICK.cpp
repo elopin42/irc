@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:49:35 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:46:19 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,15 @@ void Server::KICK(const ParsedCommand &cmd)
     }
 
     chan->remove_user(target_nick);
+
+    // Remove from kicked user's joined_channels tracking
+    Client *kicked_client = this->find_client_by_nickname(target_nick);
+    if (kicked_client)
+    {
+        std::vector<std::string>::iterator it = std::find(kicked_client->joined_channels.begin(), kicked_client->joined_channels.end(), channel_name);
+        if (it != kicked_client->joined_channels.end())
+            kicked_client->joined_channels.erase(it);
+    }
 
     if (chan->is_operator(target_nick))
         chan->remove_operator(target_nick);

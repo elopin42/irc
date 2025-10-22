@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:51:17 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/22 20:37:54 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 23:15:08 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "../incl/client.hpp"
 #include "../incl/channel.hpp"
 
-// o et l de gerer mais a l'avenier on va refaire la fonction pour enlever ces gros message degueulasse car en gros c'est tout le tenmps le meme message que on reecris pour rien
 void Server::MODE(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
@@ -50,41 +49,63 @@ void Server::MODE(const ParsedCommand &cmd)
         {
             if (cmd.args.size() < 3)
                 return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n");
+            int limit = std::atoi(cmd.args[2].c_str());
+            if (limit > 0)
+                chan->limit_user = limit;
             else
-                chan->limit_user = std::atoi(cmd.args[2].c_str());
+                return this->send_to(client->fd, ":irc.local 472 " + client->nickname + " +l :Invalid limit\r\n");
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
         }
         else if (mode == "-l")
+        {
             chan->limit_user = -1;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "+k")
         {
             if (cmd.args.size() < 3)
                 return this->send_to(client->fd, ":irc.local 461 " + client->nickname + " MODE :Not enough parameters\r\n");
-            else
-                chan->key = cmd.args[2];
+            chan->key = cmd.args[2];
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
         }
         else if (mode == "-k")
+        {
             chan->key = "";
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "+i")
-          chan->invite_only = true;
+        {
+            chan->invite_only = true;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "+a")
-          chan->bot_activate = true;
+        {
+            chan->bot_activate = true;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "-a")
-          chan->bot_activate = false;
+        {
+            chan->bot_activate = false;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "-i")
         {
-          chan->invite_only = false;
-          chan->invited_users.clear();
+            chan->invite_only = false;
+            chan->invited_users.clear();
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
         }
         else if (mode == "+t")
+        {
             chan->topic_restricted = true;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else if (mode == "-t")
+        {
             chan->topic_restricted = false;
+            chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
+        }
         else
             return this->send_to(client->fd, ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n");
-        if (mode == "+k" || mode == "+l")
-          chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
-        else
-          chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
     }
     else
         return this->send_to(client->fd, ":irc.local 502 " + client->nickname + " :Cannot change mode for other users\r\n");

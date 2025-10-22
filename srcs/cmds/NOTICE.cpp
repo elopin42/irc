@@ -6,11 +6,57 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:59:02 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:49:42 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:38 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
+#include "../incl/channel.hpp"
 
-// void Server::NOTICE(const ParsedCommand &cmd) {}
+// fully implemented
+void Server::NOTICE(const ParsedCommand &cmd)
+{
+    Client *client = this->clients[cmd.fd];
+
+    if (!client->registered)
+        return this->send_to(client->fd, ":irc.local 451 * :You have not registered\r\n");
+
+    if (cmd.args.size() < 2)
+        return this->send_to(client->fd, ":irc.local 411 " + client->nickname + " :No recipient given (NOTICE)\r\n");
+    if (cmd.args[1].empty())
+        return this->send_to(client->fd, ":irc.local 412 " + client->nickname + " :No text to send\r\n");
+
+    std::string recipient = cmd.args[0];
+    std::string message = cmd.args[1];
+
+    if (recipient[0] == '#')
+    {
+        if (this->channels.find(recipient) == this->channels.end())
+            return this->send_to(client->fd, ":irc.local 403 " + client->nickname + ' ' + recipient + " :No such channel\r\n");
+
+        if (!this->channels[recipient]->is_user(client->nickname))
+            return this->send_to(client->fd, ":irc.local 404 " + client->nickname + ' ' + recipient + " :Cannot send to channel\r\n");
+
+        for (std::vector<std::string>::iterator it = this->channels[recipient]->users.begin();
+             it != this->channels[recipient]->users.end(); ++it)
+        {
+            if (client->nickname != *it)
+            {
+                int target_fd = this->resolve_user_fd(*it);
+                if (target_fd != -1)
+                    this->send_to(target_fd, ":" + client->nickname + "!" + client->username + "@localhost NOTICE " + recipient + " :" + message + "\r\n");
+            }
+        }
+        if (this->channels[recipient]->bot_activate)
+          this->channels[recipient]->bot_message(message);
+    }
+    else
+    {
+        int target_fd = this->resolve_user_fd(recipient);
+        if (target_fd == -1)
+            return this->send_to(client->fd, ":irc.local 401 " + client->nickname + ' ' + recipient + " :No such nick/channel\r\n");
+        else
+            this->send_to(target_fd, ":" + client->nickname + "!" + client->username + "@localhost NOTICE " + recipient + " :" + message + "\r\n");
+    }
+}

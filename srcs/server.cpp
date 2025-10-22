@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/22 21:43:45 by elopin           ###   ########.fr       */
+/*   Updated: 2025/10/22 23:18:15 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,16 @@
 #include <csignal>
 #include <cerrno>
 
-extern bool g_running; 
+extern bool g_running;
+
+Server::~Server()
+{
+    delete_all(this);
+}
 
 Client *Server::find_client_by_nickname(const std::string &nickname)
 {
-    for (std::map<int, Client*>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
+    for (std::map<int, Client *>::iterator it = this->clients.begin(); it != this->clients.end(); ++it)
     {
         if (it->second->nickname == nickname)
             return it->second;
@@ -30,12 +35,14 @@ Client *Server::find_client_by_nickname(const std::string &nickname)
 
 void Server::send_to(int fd, std::string to_send)
 {
-    this->clients[fd]->add_to_send_buf(to_send);
+    std::map<int, Client *>::iterator it = this->clients.find(fd);
+    if (it != this->clients.end() && it->second)
+        it->second->add_to_send_buf(to_send);
 }
 
 int Server::resolve_user_fd(const std::string &user)
 {
-    std::map<int, Client*>::iterator it;
+    std::map<int, Client *>::iterator it;
     for (it = this->clients.begin(); it != this->clients.end(); ++it)
     {
         if (this->clients[it->first]->nickname == user)
@@ -78,35 +85,29 @@ void Server::initialize_handled_commands()
 
 void Server::execute_command(const ParsedCommand &cmd)
 {
-    // Check if command is in the command map (implemented)
     if (this->command_map.find(cmd.cmd) != this->command_map.end())
     {
-        // Call the corresponding server method
         (this->*command_map[cmd.cmd])(cmd);
         return;
     }
 
-    // Command is handled but not implemented yet
     std::cout << "[DEBUG] Command not recognized " << cmd.cmd << std::endl;
-    std::string err = "421 " + cmd.cmd + " :Command not implemented\r\n";
-    this->clients[cmd.fd]->add_to_send_buf(err);
+    std::string err = ":irc.local 421 " + cmd.cmd + " :Command not implemented\r\n";
+    this->send_to(cmd.fd, err);
 }
 
 void Server::initialize_command_map()
 {
-    // Implemented commands
     this->command_map["PING"] = &Server::PING;
     this->command_map["PONG"] = &Server::PONG;
     this->command_map["PRIVMSG"] = &Server::PRIVMSG;
     this->command_map["JOIN"] = &Server::JOIN;
     this->command_map["CAP"] = &Server::CAP;
-
-    // Not implemented yet
     this->command_map["PASS"] = &Server::PASS;
     this->command_map["NICK"] = &Server::NICK;
     this->command_map["USER"] = &Server::USER;
     this->command_map["QUIT"] = &Server::QUIT;
-    // this->command_map["NOTICE"] = &Server::NOTICE;
+    this->command_map["NOTICE"] = &Server::NOTICE;
     this->command_map["PART"] = &Server::PART;
     this->command_map["TOPIC"] = &Server::TOPIC;
     this->command_map["MODE"] = &Server::MODE;
@@ -114,29 +115,23 @@ void Server::initialize_command_map()
     this->command_map["KICK"] = &Server::KICK;
     this->command_map["WHO"] = &Server::WHO;
     this->command_map["WHOIS"] = &Server::WHOIS;
-    // this->command_map["NAMES"] = &Server::NAMES;
-    // this->command_map["LIST"] = &Server::LIST;
-    // this->command_map["ERROR"] = &Server::ERROR;
 }
 
 void Server::remove_channel(const std::string &channel)
 {
-    (void)channel;
-    //channels are removed only when it's empty no command to delete it please redo
+    std::map<std::string, Channel *>::iterator it = this->channels.find(channel);
 
-
-
-    
-    // std::vector<std::string> &joined = this->clients[fd]->joined_channels;
-
-    // std::vector<std::string>::iterator it = std::find(joined.begin(), joined.end(), channel);
-    // if (it != joined.end()) {
-    //     joined.erase(it);
-    //     std::cout << "[INFO] Client " << fd << " removed channel " << channel << std::endl;
-    //     this->clients[fd]->channel_ok = false;
-    // } else {
-    //     std::cout << "[WARN] Client " << fd << " no such channel " << channel << std::endl;
-    // }
+    if (it != this->channels.end())
+    {
+        std::string channel_name = it->second->name;
+        delete it->second;
+        this->channels.erase(it);
+        std::cout << "[INFO] Channel " << channel_name << " removed from map" << std::endl;
+    }
+    else
+    {
+        std::cout << "[WARN] Channel " << channel << " not found in map" << std::endl;
+    }
 }
 
 void Server::accept_new_client()
@@ -216,16 +211,28 @@ void Server::run(char **av)
 
 void Server::handle_client_input(int fd)
 {
-    char buf[512];
-    int n = recv(fd, buf, sizeof(buf), 0);
+    const size_t RECV_BUFFER_SIZE = 4096;
+    char buf[RECV_BUFFER_SIZE];
+    int n = recv(fd, buf, RECV_BUFFER_SIZE - 1, 0);
     if (n == -1)
         throw std::runtime_error("recv error");
     else if (n == 0)
         this->remove_client(fd);
     else if (n > 0)
     {
-        this->clients[fd]->recv_buf.append(buf, n);
-        this->clients[fd]->process_data();
+        std::map<int, Client *>::iterator it = this->clients.find(fd);
+        if (it == this->clients.end())
+            return;
+        
+        // Prevent recv_buf from growing too large (max 64KB per client)
+        if (it->second->recv_buf.size() + n > 65536)
+        {
+            std::cerr << "[WARN] Client " << fd << " buffer overflow attempt, disconnecting" << std::endl;
+            this->remove_client(fd);
+            return;
+        }
+        it->second->recv_buf.append(buf, n);
+        it->second->process_data();
     }
 }
 
@@ -248,8 +255,15 @@ void Server::epoll_loop()
                 this->accept_new_client();
             else
             {
+                if (this->clients.find(fd) == this->clients.end())
+                    continue;
+                    
                 if (this->events[i].events & EPOLLIN)
                     this->handle_client_input(fd);
+                    
+                if (this->clients.find(fd) == this->clients.end())
+                    continue;
+                    
                 if (this->events[i].events & EPOLLOUT)
                 {
                     Client *cli = this->clients[fd];

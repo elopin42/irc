@@ -3,6 +3,7 @@
 #include "../incl/client.hpp"
 #include "../incl/server.hpp"
 #include <csignal>
+#include <unistd.h>
 
 bool isValidNickname(const std::string &nick)
 {
@@ -102,7 +103,6 @@ void delete_all(Server *serv)
 {
     if (!serv)
     {
-        std::cerr << "[ERROR] delete_all: Server pointer is NULL" << std::endl;
         return;
     }
 
@@ -114,6 +114,10 @@ void delete_all(Server *serv)
             {
                 delete it->second;
                 it->second = NULL;
+            }
+            if (it->first > 0)
+            {
+                close(it->first);
             }
         }
         serv->clients.clear();
@@ -129,6 +133,25 @@ void delete_all(Server *serv)
         }
         serv->channels.clear();
         std::cout << "[INFO] All channels deleted" << std::endl;
+
+        if (serv->epfd > 0)
+        {
+            close(serv->epfd);
+            std::cout << "[INFO] Epoll fd closed" << std::endl;
+        }
+
+        if (serv->server_fd > 0)
+        {
+            close(serv->server_fd);
+            std::cout << "[INFO] Server socket closed" << std::endl;
+        }
+
+        serv->command_map.clear();
+        std::cout << "[INFO] Command map cleared" << std::endl;
+
+        serv->handled_commands.clear();
+        std::vector<std::string>(serv->handled_commands).swap(serv->handled_commands);
+        std::cout << "[INFO] Handled commands cleared" << std::endl;
     }
     catch (const std::exception &e)
     {

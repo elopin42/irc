@@ -24,9 +24,16 @@ Client::~Client() {}
 void Client::process_data()
 {
     size_t pos = 0;
-    std::cout << "recv buff contient:" << this->recv_buf << std::endl;
     while ((pos = this->recv_buf.find('\n', pos)) != std::string::npos)
     {
+        if (pos + 1 > 512)
+        {
+            std::cerr << "[WARN] Client " << this->fd << " sent message over 512 bytes, ignoring\r\n";
+            this->recv_buf = this->recv_buf.substr(pos + 1);
+            pos = 0;
+            continue;
+        }
+        
         if (pos > 0 && this->recv_buf[pos - 1] != '\r')
         {
             this->recv_buf.insert(pos, 1, '\r');
@@ -44,7 +51,6 @@ void Client::parse_lines()
 {
     while (!this->lines_to_parse.empty())
     {
-        std::cout << "line to parse is:" << this->lines_to_parse[0] << std::flush;
         std::string line = this->lines_to_parse.front();
         this->lines_to_parse.erase(this->lines_to_parse.begin());
 
@@ -82,6 +88,27 @@ void Client::parse_lines()
 
 void Client::add_to_send_buf(const std::string &data)
 {
+    std::string msg = data;
+    
+    // IRC messages must not exceed 512 bytes (including CRLF)
+    if (msg.size() > 512)
+    {
+        // Truncate to 510 bytes to leave room for CRLF
+        msg = msg.substr(0, 510);
+        
+        // Make sure we don't cut in the middle of a CRLF
+        if (msg.size() >= 2 && msg.substr(msg.size() - 2) == "\r\n")
+        {
+            msg = msg.substr(0, msg.size() - 2);
+        }
+        else if (msg.size() >= 1 && (msg[msg.size() - 1] == '\r' || msg[msg.size() - 1] == '\n'))
+        {
+            msg = msg.substr(0, msg.size() - 1);
+        }
+        
+        msg += "\r\n";
+    }
+    
     bool was_empty = this->send_buf.empty();
     if (was_empty)
     {
@@ -90,7 +117,7 @@ void Client::add_to_send_buf(const std::string &data)
         if (epoll_ctl(this->server->epfd, EPOLL_CTL_MOD, this->fd, &this->server->ev) == -1)
             throw std::runtime_error("epoll_ctl fail");
     }
-    this->send_buf.push_back(data);
+    this->send_buf.push_back(msg);
 }
 
 void Client::send_pending()
@@ -98,8 +125,9 @@ void Client::send_pending()
     std::vector<std::string>::iterator it = this->send_buf.begin();
     if (it != this->send_buf.end())
     {
-        send(this->fd, (*it).c_str(), (*it).size(), 0);
-        it = this->send_buf.erase(it);
+        ssize_t sent = send(this->fd, (*it).c_str(), (*it).size(), 0);
+        if (sent > 0)
+            it = this->send_buf.erase(it);
         if (this->send_buf.empty())
         {
             if (this->kick)

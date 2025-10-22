@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:59:33 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/22 18:29:24 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,11 @@ void Server::PART(const ParsedCommand &cmd)
         }
 
         channel->remove_user(client->nickname);
+
+        // Remove from joined_channels tracking
+        std::vector<std::string>::iterator it = std::find(client->joined_channels.begin(), client->joined_channels.end(), channel_name);
+        if (it != client->joined_channels.end())
+            client->joined_channels.erase(it);
 
         if (channel->is_operator(client->nickname))
             channel->remove_operator(client->nickname);

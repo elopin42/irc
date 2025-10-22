@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:52:00 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:46:12 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void Server::JOIN(const ParsedCommand &cmd)
     // If there are extra args and they look like channel continuations, concatenate them
     for (size_t i = 1; i < cmd.args.size(); ++i)
     {
-        if (cmd.args[i][0] == '#')
+        if (!cmd.args[i].empty() && cmd.args[i][0] == '#')
         {
             channel_arg += "," + cmd.args[i];
         }
@@ -71,7 +71,7 @@ void Server::JOIN(const ParsedCommand &cmd)
 
         if (channel->invite_only && !channel->is_invited(client->nickname))
         {
-            this->send_to(client->fd, ":irc.local 473" + client->nickname + " " + channel_name + ":Cannot join channel (+i)\r\n");
+            this->send_to(client->fd, ":irc.local 473 " + client->nickname + " " + channel_name + " :Cannot join channel (+i)\r\n");
             continue;
         }
         if (channel->invite_only)
@@ -97,6 +97,10 @@ void Server::JOIN(const ParsedCommand &cmd)
         }
 
         channel->add_user(client->nickname);
+
+        // Track joined channel in client
+        if (std::find(client->joined_channels.begin(), client->joined_channels.end(), channel_name) == client->joined_channels.end())
+            client->joined_channels.push_back(channel_name);
 
         std::string join_msg = ":" + client->nickname + "!" + client->username + "@localhost JOIN " + channel_name + "\r\n";
         this->send_to(client->fd, join_msg);

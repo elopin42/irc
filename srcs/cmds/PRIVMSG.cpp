@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:52:19 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:46:41 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 22:53:39 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,9 @@
 void Server::PRIVMSG(const ParsedCommand &cmd)
 {
     Client *client = this->clients[cmd.fd];
+
+    if (!client->registered)
+        return this->send_to(client->fd, ":irc.local 451 * :You have not registered\r\n");
 
     if (cmd.args.size() < 2)
         return this->send_to(client->fd, ":irc.local 411 " + client->nickname + " :No recipient given (PRIVMSG)\r\n");
