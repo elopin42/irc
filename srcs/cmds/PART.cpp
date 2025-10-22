@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:59:33 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:49:50 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 18:29:24 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void Server::PART(const ParsedCommand &cmd)
             std::cout << " (" << part_message << ")";
         std::cout << std::endl;
 
-        if (channel->users.empty() && !channel->is_operator(client->nickname))
+        if (channel->users.empty())
             this->remove_channel(channel->name);
     }
 }

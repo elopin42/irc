@@ -1,4 +1,5 @@
 #include "../incl/defs.hpp"
+#include "../incl/server.hpp"
 
 bool isValidNickname(const std::string &nick)
 {
@@ -94,3 +95,35 @@ std::vector<std::string> split(const std::string &s, char delimiter)
     return tokens;
 }
 
+
+void    delete_all(Server *serv)
+{
+    if (serv == NULL)
+    {
+        std::cerr << "[ERROR] delete_all: Server pointer is NULL" << std::endl;
+        return;
+    }
+
+    try
+    {
+        for(std::map<int, Client*>::iterator it = serv->clients.begin(); it != serv->clients.end(); ++it)
+        {
+            if (it->second != NULL)
+                delete it->second;
+        }
+        serv->clients.clear();
+        std::cout << "[INFO] All clients deleted" << std::endl;
+
+        for(std::map<std::string, Channel*>::iterator it = serv->channels.begin(); it != serv->channels.end(); ++it)
+        {
+            if (it->second != NULL)
+                delete it->second;
+        }
+        serv->channels.clear();
+        std::cout << "[INFO] All channels deleted" << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "[ERROR] delete_all: Exception caught - " << e.what() << std::endl;
+    }
+}

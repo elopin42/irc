@@ -1,8 +1,6 @@
 #include "../incl/client.hpp"
 #include "../incl/server.hpp"
 
-int check_join_command(const std::string &msg, std::string &out_channel);
-
 Client::Client(int fd, Server *serv)
     : server(serv),
       fd(fd),
@@ -26,6 +24,7 @@ Client::~Client() {}
 void Client::process_data()
 {
     size_t pos = 0;
+    std::cout << "recv buff contient:" << this->recv_buf << std::endl;
     while ((pos = this->recv_buf.find('\n', pos)) != std::string::npos)
     {
         if (pos > 0 && this->recv_buf[pos - 1] != '\r')

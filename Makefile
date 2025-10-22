@@ -3,11 +3,9 @@ CC = c++
 CFLAGS = -g3 -Wall -Wextra -Werror -std=c++98
 
 SRCS =	srcs/cmds/CAP.cpp		\
-		srcs/cmds/ERROR.cpp		\
 		srcs/cmds/INVITE.cpp	\
 		srcs/cmds/JOIN.cpp		\
 		srcs/cmds/KICK.cpp		\
-		srcs/cmds/LIST.cpp		\
 		srcs/cmds/MODE.cpp		\
 		srcs/cmds/NICK.cpp		\
 		srcs/cmds/NOTICE.cpp	\

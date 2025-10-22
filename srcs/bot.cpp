@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   bot.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ckarsent <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/22 14:51:06 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/22 14:51:08 by ckarsent         ###   ########.fr       */
+/*   Updated: 2025/10/22 20:38:50 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,30 @@ void Channel::bot_message(const std::string &msg) {
 	static std::map<std::string, std::string> responses;
 	
 	if (responses.empty()) {
-		responses["1"] = "a";
-		responses["2"] = "b";
-		responses["3"] = "c";
-		responses["4"] = "d";
-		responses["5"] = "e";
-		responses["6"] = "f";
-		responses["7"] = "g";
-		responses["8"] = "h";
-		responses["9"] = "i";
-		responses["10"] = "j";
+		responses["help"] = "non";
+		responses["error"] = "erreur humaine detectee";
+		responses["bug"] = "it works on my machine";
+		responses["segfault"] = "rip";
+		responses["make"] = "make re, frere";
+		responses["compile"] = "ca compile pas";
+		responses["malloc"] = "free oublie";
+		responses["valgrind"] = "rien a signaler";
+		responses["pipe"] = "ferme";
+		responses["shell"] = "toujours pas fini";
+        responses["norminette"] = "elle te regarde";
+        responses["bash"] = "--posix";
+        responses["zsh"] = "trop lent";
+        responses["read"] = "rien lu";
+        responses["beer"] = "pas encore";
+        responses["pid"] = "zombie";
+        responses["child"] = "abandonne";
+        responses["thread"] = "invisible";
+        responses["mutex"] = "verrouillé pour toujours";
+        responses["sleep"] = "jamais";
+        responses["coffee"] = "vide";
+        responses["core"] = "dumped";
+        responses["return"] = "rien";
+        responses["void"] = "comme toi";
 	}
 
     std::istringstream iss(msg);

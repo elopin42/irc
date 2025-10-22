@@ -6,7 +6,7 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 14:51:17 by ckarsent          #+#    #+#             */
-/*   Updated: 2025/10/21 22:46:25 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 20:37:54 by yle-jaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,9 @@ void Server::MODE(const ParsedCommand &cmd)
         else
             return this->send_to(client->fd, ":irc.local 472 " + client->nickname + " " + mode + " :is unknown mode char to me\r\n");
         if (mode == "+k" || mode == "+l")
-          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
+          chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " " + cmd.args[2] + "\r\n", "");
         else
-          chan->broadcast_message(":" + client->nickname + " MODE " + chan->name + " " + mode + " \r\n", "");
+          chan->broadcast_message(":" + client->nickname + "!" + client->username + "@localhost MODE " + chan->name + " " + mode + " \r\n", "");
     }
     else
         return this->send_to(client->fd, ":irc.local 502 " + client->nickname + " :Cannot change mode for other users\r\n");
