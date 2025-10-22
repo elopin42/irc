@@ -103,13 +103,13 @@ void Server::initialize_command_map()
     this->command_map["USER"] = &Server::USER;
     this->command_map["QUIT"] = &Server::QUIT;
     // this->command_map["NOTICE"] = &Server::NOTICE;
-    // this->command_map["PART"] = &Server::PART;
+    this->command_map["PART"] = &Server::PART;
     this->command_map["TOPIC"] = &Server::TOPIC;
     this->command_map["MODE"] = &Server::MODE;
     this->command_map["INVITE"] = &Server::INVITE;
     this->command_map["KICK"] = &Server::KICK;
-    // this->command_map["WHO"] = &Server::WHO;
-    // this->command_map["WHOIS"] = &Server::WHOIS;
+    this->command_map["WHO"] = &Server::WHO;
+    this->command_map["WHOIS"] = &Server::WHOIS;
     // this->command_map["NAMES"] = &Server::NAMES;
     // this->command_map["LIST"] = &Server::LIST;
     // this->command_map["ERROR"] = &Server::ERROR;
