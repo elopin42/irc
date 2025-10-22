@@ -6,13 +6,17 @@
 /*   By: yle-jaou <yle-jaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 18:33:29 by yle-jaou          #+#    #+#             */
-/*   Updated: 2025/10/20 17:27:24 by yle-jaou         ###   ########.fr       */
+/*   Updated: 2025/10/22 21:43:45 by elopin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incl/server.hpp"
 #include "../incl/client.hpp"
 #include "../incl/channel.hpp"
+#include <csignal>
+#include <cerrno>
+
+extern bool g_running; 
 
 Client *Server::find_client_by_nickname(const std::string &nickname)
 {
@@ -227,23 +231,39 @@ void Server::handle_client_input(int fd)
 
 void Server::epoll_loop()
 {
-    while (true)
+    while (g_running)
     {
-        int nfds = epoll_wait(this->epfd, this->events, MAX_EVENTS, -1);
+        int nfds = epoll_wait(this->epfd, this->events, MAX_EVENTS, 1000); // timeout 1s pour réagir au Ctrl+C
         if (nfds == -1)
-            throw std::runtime_error("epoll_wait fail\n");
+        {
+            if (errno == EINTR)
+                continue; // interruption normale (Ctrl+C)
+            throw std::runtime_error("epoll_wait fail");
+        }
+
         for (int i = 0; i < nfds; i++)
         {
-            if (this->events[i].data.fd == this->server_fd)
+            int fd = this->events[i].data.fd;
+            if (fd == this->server_fd)
                 this->accept_new_client();
             else
             {
                 if (this->events[i].events & EPOLLIN)
-                    this->handle_client_input(this->events[i].data.fd);
+                    this->handle_client_input(fd);
                 if (this->events[i].events & EPOLLOUT)
-                    this->clients[this->events[i].data.fd]->send_pending();
-
+                {
+                    Client *cli = this->clients[fd];
+                    if (cli)
+                        cli->send_pending();
+                }
             }
         }
     }
+
+    std::cout << "[INFO] Exiting epoll loop, cleaning up..." << std::endl;
+
+    if (this->server_fd > 0)
+        close(this->server_fd);
+
+    delete_all(this);
 }

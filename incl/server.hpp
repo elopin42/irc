@@ -26,6 +26,8 @@ public:
     std::vector<std::string> handled_commands;
     std::map<std::string, void (Server::*)(const ParsedCommand &)> command_map;
 
+	~Server();
+
     void run(char **av);
     void epoll_loop();
     void initialize_handled_commands();
@@ -69,5 +71,7 @@ public:
     void LIST(const ParsedCommand &cmd);
     void ERROR(const ParsedCommand &cmd);
 };
+
+void delete_all(Server *serv);
 
 #endif
