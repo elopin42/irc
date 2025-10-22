@@ -66,6 +66,10 @@ void Server::MODE(const ParsedCommand &cmd)
             chan->key = "";
         else if (mode == "+i")
           chan->invite_only = true;
+        else if (mode == "+a")
+          chan->bot_activate = true;
+        else if (mode == "-a")
+          chan->bot_activate = false;
         else if (mode == "-i")
         {
           chan->invite_only = false;

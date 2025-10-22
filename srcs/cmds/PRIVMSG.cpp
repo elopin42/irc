@@ -45,6 +45,8 @@ void Server::PRIVMSG(const ParsedCommand &cmd)
                     this->send_to(target_fd, ":" + client->nickname + "!" + client->username + "@localhost PRIVMSG " + recipient + " :" + message + "\r\n");
             }
         }
+        if (this->channels[recipient]->bot_activate)
+          this->channels[recipient]->bot_message(message);
     }
     else
     {

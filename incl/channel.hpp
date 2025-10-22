@@ -30,6 +30,7 @@ public:
     bool invite_only;
     int limit_user;
     bool topic_restricted;
+    bool bot_activate;
 
     Channel(const std::string& name, Server *serv);
     ~Channel();
@@ -40,6 +41,7 @@ public:
     bool is_user(const std::string &nickname);
 
     void set_topic(const std::string& new_topic);
+    void bot_message(std::string msg);
     bool is_operator(const std::string& nickname) const;
     void add_operator(const Client& setter, const std::string& nickname);
     void remove_operator(const std::string& nickname);
