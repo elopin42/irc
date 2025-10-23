@@ -75,6 +75,74 @@ void Channel::bot_message(const std::string &msg) {
 			return_msg = s1 + s2 + s3 + " → perdu";
 	}
 
+	else if (lower.find("pierre") != std::string::npos
+		|| lower.find("feuille") != std::string::npos
+		|| lower.find("ciseaux") != std::string::npos) {
+		std::string options[] = {"pierre", "feuille", "ciseaux"};
+		std::string bot = options[rand() % 3];
+		return_msg = "BOT a choisi " + bot + " !";
+		if ((lower.find("pierre") != std::string::npos && bot == "ciseaux")
+			|| (lower.find("feuille") != std::string::npos && bot == "pierre")
+			|| (lower.find("ciseaux") != std::string::npos && bot == "feuille")) {
+			return_msg += " => Tu gagnes !!";
+		}
+		else if ((lower.find("pierre") != std::string::npos && bot == "feuille")
+			|| (lower.find("feuille") != std::string::npos && bot == "ciseaux")
+			|| (lower.find("ciseaux") != std::string::npos && bot == "pierre")) {
+			return_msg += " => BOT gagne :( ";
+		}
+		else {
+			return_msg += " => Egalite :|";
+		}
+	}
+
+	else if (lower.find("date") != std::string::npos || lower.find("heure") != std::string::npos) {
+		time_t now = time(0);
+		tm *ltm = localtime(&now);
+		char buffer[80];
+		strftime(buffer, sizeof(buffer), "Nous sommes le %Y-%m-%d et il est %H:%M:%S", ltm);
+		return_msg = buffer;
+	}
+
+	else if (lower.find("calcule") != std::string::npos) {
+		size_t pos = lower.find("calcule");
+		std::string expression = lower.substr(pos + 7);
+		std::istringstream iss(expression);
+		double result;
+		iss >> result;
+		char op;
+		while (iss >> op) {
+			double next_number;
+			iss >> next_number;
+			if (op == '+')
+				result += next_number;
+			else if (op == '-')
+				result -= next_number;
+			else if (op == '*')
+				result *= next_number;
+			else if (op == '/')
+				result /= next_number;
+			else {
+				return_msg = "Opérateur inconnu.";
+				broadcast_message(":BOT!BOT@localhost PRIVMSG " + name + " :" + return_msg + "\r\n", "");
+				return;
+			}
+		}
+		std::ostringstream ss;
+		ss << "Le résultat est : " << result;
+		return_msg = ss.str();
+
+	}
+
+	else if (lower.find("pile") != std::string::npos || lower.find("face") != std::string::npos) {
+		std::string toss = (rand() % 2) ? "pile" : "face";
+		return_msg = "Le BOT lance la pièce... c’est " + toss + " ! ";
+		if (lower.find(toss) != std::string::npos)
+			return_msg += "Tu gagnes !";
+		else
+			return_msg += "Perdu";
+	}
+
 	else {
 		size_t best_pos = std::string::npos;
 		std::string best_response;
