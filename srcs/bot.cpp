@@ -80,7 +80,7 @@ void Channel::bot_message(const std::string &msg) {
 		std::string best_response;
 		for (std::map<std::string, std::string>::iterator it = responses.begin(); it != responses.end(); ++it) {
 			const std::string &key = it->first;
-			size_t pos = msg.find(key);
+			size_t pos = lower.find(key);
 			if (pos != std::string::npos) {
 				if (best_pos == std::string::npos || pos < best_pos) {
 					best_pos = pos;
