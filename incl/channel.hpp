@@ -17,8 +17,6 @@
 #include "../incl/server.hpp"
 
 class Channel {
-// private:
-//     std::map<std::string, std::string> bot_responses;
 public:
     Server *serv;
 
